@@ -16,7 +16,7 @@ class FilmorateApplicationTests {
     private final UserController userController = new UserController();
 
     @Test
-    void WhenEmailIsBlank() {
+    void whenEmailIsBlank() {
         User user = new User();
         user.setEmail("");
         user.setLogin("validLogin");
@@ -26,7 +26,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void WhenEmailDoesNotContainAtSymbol() {
+    void whenEmailDoesNotContainAtSymbol() {
         User user = new User();
         user.setEmail("invalidEmail");
         user.setLogin("validLogin");
@@ -36,7 +36,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void WhenLoginIsBlank() {
+    void whenLoginIsBlank() {
         User user = new User();
         user.setEmail("valid@example.com");
         user.setLogin("");
@@ -46,7 +46,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void WhenLoginContainsSpaces() {
+    void whenLoginContainsSpaces() {
         User user = new User();
         user.setEmail("valid@example.com");
         user.setLogin("invalid login");
@@ -56,7 +56,7 @@ class FilmorateApplicationTests {
     }
 
     @Test
-    void WhenBirthdayIsInFuture() {
+    void whenBirthdayIsInFuture() {
         User user = new User();
         user.setEmail("valid@example.com");
         user.setLogin("validLogin");
