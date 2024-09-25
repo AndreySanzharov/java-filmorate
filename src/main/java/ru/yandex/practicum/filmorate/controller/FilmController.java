@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.springframework.core.annotation.MergedAnnotationPredicates;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -28,20 +27,13 @@ public class FilmController {
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        if (film.getName().isBlank() || film.getName() == null) {
-            throw new ValidationException("Название фильма не может быть пустым.");
-        } else if (film.getDescription().length() > 200) {
-            throw new ValidationException("Максимальная длина описания - 200 символов. Фактичкеская длина: "
-                    + film.getDescription().length());
-        } else if (film.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28))) {
-            throw new ValidationException("Саммая рання дата релиза может бьть: 28.12.1895.");
-        } else if (film.getDuration().isNegative()) {
-            throw new ValidationException("Продолжительность должна быть положительным числом.");
-        } else {
-            film.setId(getNextId());
-            films.put(film.getId(), film);
-            return film;
-        }
+
+        validate(film);
+
+        film.setId(getNextId());
+        films.put(film.getId(), film);
+        return film;
+
     }
 
     @PutMapping
@@ -51,15 +43,33 @@ public class FilmController {
         }
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getDescription() == null || newFilm.getDescription().isBlank()) {
-                throw new ValidationException("Описание не может быть пустым");
-            }
+            validate(newFilm);
+            
+            
             oldFilm.setDescription(newFilm.getDescription());
+            oldFilm.setReleaseDate(newFilm.getReleaseDate());
+            oldFilm.setName(newFilm.getName());
+            oldFilm.setDuration(newFilm.getDuration());
+            
             return oldFilm;
         }
-        throw new NotFoundException("Пост с id " + newFilm.getId() + " не найден");
+        throw new NotFoundException("Пост с id " + newFilm.getId() + " не найден.");
     }
 
+    private void validate(Film film) {
+        if (film.getName().isBlank() || film.getName() == null) {
+            throw new ValidationException("Название фильма не может быть пустым.");
+        } else if (film.getDescription().length() > 200) {
+            throw new ValidationException("Максимальная длина описания - 200 символов. Фактичкеская длина: "
+                    + film.getDescription().length());
+        } else if (film.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28))) {
+            throw new ValidationException("Саммая рання дата релиза может бьть: 28.12.1895.");
+        } else if (film.getDuration().isNegative()) {
+            throw new ValidationException("Продолжительность должна быть положительным числом.");
+        } else if (film.getDescription().isBlank() || film.getDescription() == null) {
+            throw new ValidationException("Описание не может быть пустым.");
+        }
+    }
 
     private long getNextId() {
         long currentMaxId = films.keySet()
