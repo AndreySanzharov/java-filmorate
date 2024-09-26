@@ -25,19 +25,21 @@ public class UserController {
 
     @PostMapping
     public User create(@RequestBody User user) {
-        log.info("Cоздание пользователя {}", user);
-        validate(user);
+        log.info("Создание пользователя {}", user);
 
-        if (user.getName().isBlank() || user.getName() == null) {
+        // Устанавливаем имя, если оно пустое
+        if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+
+        validate(user); // Валидация после установки имени
+
         user.setId(getNextId());
         users.put(user.getId(), user);
 
         log.info("Пользователь успешно создан");
 
         return user;
-
     }
 
     @PutMapping
