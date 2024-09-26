@@ -37,7 +37,6 @@ public class UserController {
         log.info("Пользователь успешно создан");
 
         return user;
-
     }
 
     @PutMapping
@@ -53,9 +52,9 @@ public class UserController {
             oldUser.setEmail(newUser.getEmail());
             oldUser.setLogin(newUser.getLogin());
             oldUser.setBirthday(newUser.getBirthday());
-            if (newUser.getName().isBlank() || newUser.getName() ==  null) {
+            if (newUser.getName().isBlank() || newUser.getName() == null) {
                 oldUser.setName(newUser.getLogin());
-            }else{
+            } else {
                 oldUser.setName(newUser.getName());
             }
 
