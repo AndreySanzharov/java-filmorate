@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
-class FilmorateApplicationTests {
+class UserControllerTests {
 
     private final UserController userController = new UserController();
 
