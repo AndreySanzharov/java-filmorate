@@ -15,12 +15,15 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
     private final Map<Long, Film> films = new HashMap<>();
+    private long currentID;
+
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -88,11 +91,14 @@ public class FilmController {
     }
 
     private long getNextId() {
-        long currentMaxId = films.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        Set<Long> allId = films.keySet();
+        long maxId = 0;
+        for (long id : allId) {
+            if (id > maxId) {
+                maxId = id;
+            }
+        }
+        currentID = ++maxId;
+        return currentID;
     }
 }

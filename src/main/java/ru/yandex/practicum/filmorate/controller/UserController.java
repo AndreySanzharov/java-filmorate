@@ -19,6 +19,7 @@ import java.util.*;
 @RequestMapping("/users")
 public class UserController {
     private final Map<Long, User> users = new HashMap<>();
+    private long currentID;
 
     @GetMapping
     public Collection<User> findAll() {
@@ -93,11 +94,14 @@ public class UserController {
     }
 
     private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+        Set<Long> allId = users.keySet();
+        long maxId = 0;
+        for (long id : allId) {
+            if (id > maxId) {
+                maxId = id;
+            }
+        }
+        currentID = ++maxId;
+        return currentID;
     }
 }
