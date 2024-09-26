@@ -31,7 +31,7 @@ public class FilmController {
     @PostMapping
     public Film create(@RequestBody Film film) {
         log.info("Cоздание фильма {}", film);
-        validate(film);
+        validate(film, false);
 
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -47,7 +47,7 @@ public class FilmController {
         }
         if (films.containsKey(newFilm.getId())) {
             Film oldFilm = films.get(newFilm.getId());
-            validate(newFilm);
+            validate(newFilm, true);
             oldFilm.setDescription(newFilm.getDescription());
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
             oldFilm.setName(newFilm.getName());
@@ -58,7 +58,12 @@ public class FilmController {
         throw new NotFoundException("Пост с id " + newFilm.getId() + " не найден.");
     }
 
-    private void validate(Film film) {
+    private void validate(Film film, boolean isUpdate) {
+
+        if (isUpdate && (film.getId() == null)) {
+            log.error("Ошибка валидации фильма: id должен быть указан при обновлении.");
+            throw new ValidationException("Id должен быть указан при обновлении.");
+        }
         if (film.getName().isBlank() || film.getName() == null) {
             log.error("Ошибка валидации фильма: пустое название");
             throw new ValidationException("Название фильма не может быть пустым.");

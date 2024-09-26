@@ -1,15 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -32,7 +35,7 @@ public class UserController {
             user.setName(user.getLogin());
         }
 
-        validate(user); // Валидация после установки имени
+        validate(user, false); // Валидация после установки имени
 
         user.setId(getNextId());
         users.put(user.getId(), user);
@@ -44,12 +47,8 @@ public class UserController {
 
     @PutMapping
     public User update(@RequestBody User newUser) {
-        if (newUser.getId() == null) {
-            log.error("Ошибка валидации пользователя. Id не указан. {}", newUser);
-            throw new ValidationException("Id должен быть указан.");
-        }
         if (users.containsKey(newUser.getId())) {
-            validate(newUser);
+            validate(newUser, true);
             User oldUser = users.get(newUser.getId());
 
             oldUser.setEmail(newUser.getEmail());
@@ -68,7 +67,11 @@ public class UserController {
         throw new NotFoundException("Пользователь с id " + newUser.getId() + " не найден.");
     }
 
-    private void validate(User user) {
+    private void validate(User user, boolean isUpdate) {
+        if (isUpdate && (user.getId() == null)) {
+            log.error("Ошибка валидации пользователя: id должен быть указан при обновлении.");
+            throw new ValidationException("Id должен быть указан при обновлении.");
+        }
         if (user.getEmail().isBlank() || user.getEmail() == null) {
             log.error("Ошибка валидации пользователя: пустая почта");
             throw new ValidationException("Почта не должна быть пустой.");
