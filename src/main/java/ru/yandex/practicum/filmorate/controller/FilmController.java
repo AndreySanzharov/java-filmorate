@@ -68,7 +68,7 @@ public class FilmController {
             throw new ValidationException("Максимальная длина описания - 200 символов. Фактичкеская длина: "
                     + film.getDescription().length());
         }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1985, 12, 28))) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.error("Ошибка валидации фильма: неверная дата релиза");
             throw new ValidationException("Саммая ранняя дата релиза может бьть: 28.12.1895.");
         }
