@@ -53,8 +53,10 @@ public class UserController {
             oldUser.setEmail(newUser.getEmail());
             oldUser.setLogin(newUser.getLogin());
             oldUser.setBirthday(newUser.getBirthday());
-            if (newUser.getName().isBlank() || newUser.getName() == null) {
+            if (newUser.getName().isBlank() || newUser.getName() ==  null) {
                 oldUser.setName(newUser.getLogin());
+            }else{
+                oldUser.setName(newUser.getName());
             }
 
             log.info("Пользователь успешно обновлен {}", oldUser);
