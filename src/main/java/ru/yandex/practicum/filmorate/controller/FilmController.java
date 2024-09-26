@@ -72,7 +72,7 @@ public class FilmController {
             log.error("Ошибка валидации фильма: неверная дата релиза");
             throw new ValidationException("Саммая ранняя дата релиза может бьть: 28.12.1895.");
         }
-        if (film.getDuration().isNegative()) {
+        if (film.getDuration() < 0) {
             log.error("Ошибка валидации фильма: продолжительность должна быть положительным числом");
             throw new ValidationException("Продолжительность должна быть положительным числом.");
         }
