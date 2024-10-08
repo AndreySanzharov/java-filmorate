@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -68,24 +67,6 @@ public class InMemoryUserStorage implements UserStorage {
             log.error("Ошибка валидации пользователя: id должен быть указан при обновлении.");
             throw new ValidationException("Id должен быть указан при обновлении.");
         }
-        if (user.getEmail().isBlank() || user.getEmail() == null) {
-            log.error("Ошибка валидации пользователя: пустая почта");
-            throw new ValidationException("Почта не должна быть пустой.");
-        } else if (!user.getEmail().contains("@")) {
-            log.error("Ошибка валидации пользователя: отсутствие символа @ в почте");
-            throw new ValidationException("Почта должна содержать @.");
-        }
-        if (user.getLogin().isBlank()) {
-            log.error("Ошибка валидации пользователя: пустой логин");
-            throw new ValidationException("Логин не должен быть пустым.");
-        } else if (user.getLogin().contains(" ")) {
-            log.error("Ошибка валидации пользователя: логин содержит пробелы");
-            throw new ValidationException("Логин не должен содержать пробелы.");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Ошибка валидации пользователя: неверно указана дата рождения");
-            throw new ValidationException("Дата рождения не может быть в будущем.");
-        }
     }
 
     private long getNextId() {
@@ -94,6 +75,7 @@ public class InMemoryUserStorage implements UserStorage {
         for (long id : allId) {
             if (id > maxId) {
                 maxId = id;
+
             }
         }
         currentID = ++maxId;
