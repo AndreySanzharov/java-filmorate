@@ -62,6 +62,29 @@ public class InMemoryUserStorage implements UserStorage {
         throw new NotFoundException("Пользователь с id " + newUser.getId() + " не найден.");
     }
 
+    @Override
+    public User addFriend(int userId, int friendId) {
+        getUserById(userId).getFriends().add(friendId);
+        getUserById(friendId).getFriends().add(userId);
+        return getUserById(userId);
+    }
+
+    @Override
+    public User deleteFriend(int userId, int friendId){
+        getUserById(userId).getFriends().remove(friendId);
+        getUserById(friendId).getFriends().remove(userId);
+        return getUserById(userId);
+    }
+
+    @Override
+    public User getUserById(int userId) {
+        if (users.containsKey(userId)){
+            return users.get(userId);
+        }else{
+            throw new NotFoundException("Пользователь не найден");
+        }
+    }
+
     private void validate(User user, boolean isUpdate) {
         if (isUpdate && (user.getId() == null)) {
             log.error("Ошибка валидации пользователя: id должен быть указан при обновлении.");
