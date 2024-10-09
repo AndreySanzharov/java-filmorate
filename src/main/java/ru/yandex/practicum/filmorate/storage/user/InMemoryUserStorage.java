@@ -25,9 +25,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
-        log.info("Создание пользователя {}", user);
-
-        // Устанавливаем имя, если оно пустое
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -36,7 +33,7 @@ public class InMemoryUserStorage implements UserStorage {
 
         user.setId(getNextId());
         users.put(user.getId(), user);
-
+        log.info("Создание пользователя {}", user);
         log.info("Пользователь успешно создан");
         return user;
     }
@@ -70,7 +67,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User deleteFriend(int userId, int friendId){
+    public User deleteFriend(int userId, int friendId) {
         getUserById(userId).getFriends().remove(friendId);
         getUserById(friendId).getFriends().remove(userId);
         return getUserById(userId);
@@ -78,9 +75,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User getUserById(int userId) {
-        if (users.containsKey(userId)){
-            return users.get(userId);
-        }else{
+        if (users.containsKey((long) userId)) {
+            return users.get((long) userId);
+        } else {
             throw new NotFoundException("Пользователь не найден");
         }
     }
