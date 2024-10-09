@@ -28,5 +28,9 @@ public class UserService {
         return userStorage.getFriendsById(id);
     }
 
+    public List<User> getMutualFriendsById(int id, int otherId) {
+        return userStorage.getMutualFriendsById(id, otherId);
+    }
+
 
 }

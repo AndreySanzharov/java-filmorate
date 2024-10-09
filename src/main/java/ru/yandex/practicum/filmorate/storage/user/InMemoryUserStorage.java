@@ -6,7 +6,12 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -67,9 +72,10 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User deleteFriend(int userId, int friendId) {
-        log.info("Удаление друга");
+        log.info("Удаление друга {}", users.get(friendId));
         getUserById(userId).getFriends().remove(friendId);
         getUserById(friendId).getFriends().remove(userId);
+        log.info("Друг добавлен");
         return getUserById(userId);
     }
 
@@ -86,6 +92,18 @@ public class InMemoryUserStorage implements UserStorage {
         } else {
             throw new NotFoundException("Пользователь не найден");
         }
+    }
+
+    @Override
+    public List<User> getMutualFriendsById(int userId, int otherId) {
+        log.info("Получение общих друзей");
+        List<User> mutual = new ArrayList<>();
+        for (Integer id : getUserById(userId).getFriends()) {
+            if (getUserById(otherId).getFriends().contains(id)) {
+                mutual.add(getUserById(id));
+            }
+        }
+        return mutual;
     }
 
     private void validate(User user, boolean isUpdate) {

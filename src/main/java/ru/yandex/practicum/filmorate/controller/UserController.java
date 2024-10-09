@@ -29,6 +29,11 @@ public class UserController {
         return userService.getFriendsById(id);
     }
 
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public List<User> getMutualFriendsById(@PathVariable String id, @PathVariable String otherId) {
+        return userService.getMutualFriendsById(Integer.parseInt(id), Integer.parseInt(otherId));
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userStorage.create(user);
