@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -23,6 +24,11 @@ public class UserController {
         return userStorage.findAll();
     }
 
+    @GetMapping("/{id}/friends")
+    public List<User> getFriendsById(@PathVariable int id) {
+        return userService.getFriendsById(id);
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userStorage.create(user);
@@ -33,12 +39,12 @@ public class UserController {
         return userStorage.update(newUser);
     }
 
-    @PutMapping("/{id}/friends/{friendId}/add")
+    @PutMapping("/{id}/friends/{friendId}")
     public User addFriend(@PathVariable String id, @PathVariable String friendId) {
         return userService.addFriend(Integer.parseInt(id), Integer.parseInt(friendId));
     }
 
-    @PutMapping("/{id}/friends/{friendId}/delete")
+    @DeleteMapping("/{id}/friends/{friendId}")
     public User deleteFriend(@PathVariable String id, @PathVariable String friendId) {
         return userService.deleteFriend(Integer.parseInt(id), Integer.parseInt(friendId));
     }

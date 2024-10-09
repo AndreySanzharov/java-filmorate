@@ -6,10 +6,8 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -34,7 +32,7 @@ public class InMemoryUserStorage implements UserStorage {
         user.setId(getNextId());
         users.put(user.getId(), user);
         log.info("Создание пользователя {}", user);
-        log.info("Пользователь успешно создан");
+        log.info("Пользователь создан");
         return user;
     }
 
@@ -53,7 +51,7 @@ public class InMemoryUserStorage implements UserStorage {
                 oldUser.setName(newUser.getName());
             }
 
-            log.info("Пользователь успешно обновлен {}", oldUser);
+            log.info("Пользователь обновлен", oldUser);
             return oldUser;
         }
         throw new NotFoundException("Пользователь с id " + newUser.getId() + " не найден.");
@@ -61,6 +59,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addFriend(int userId, int friendId) {
+        log.info("Добавление друга");
         getUserById(userId).getFriends().add(friendId);
         getUserById(friendId).getFriends().add(userId);
         return getUserById(userId);
@@ -68,9 +67,16 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User deleteFriend(int userId, int friendId) {
+        log.info("Удаление друга");
         getUserById(userId).getFriends().remove(friendId);
         getUserById(friendId).getFriends().remove(userId);
         return getUserById(userId);
+    }
+
+    @Override
+    public List<User> getFriendsById(int id) {
+        log.info("Получение друзей по id");
+        return users.values().stream().filter(user -> user.getFriends().contains(id)).collect(Collectors.toList());
     }
 
     @Override

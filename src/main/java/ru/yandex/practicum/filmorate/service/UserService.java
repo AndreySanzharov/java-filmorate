@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -20,6 +22,10 @@ public class UserService {
     public User deleteFriend(int userId, int friendId) {
         userStorage.deleteFriend(userId, friendId);
         return userStorage.getUserById(userId);
+    }
+
+    public List<User> getFriendsById(int id) {
+        return userStorage.getFriendsById(id);
     }
 
 
