@@ -19,7 +19,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> findAll() {
-        log.info("Получен запрос на получение всех фильмов");
+        //log.info("Получен запрос на получение всех фильмов");
         return films.values();
     }
 
@@ -30,14 +30,14 @@ public class InMemoryFilmStorage implements FilmStorage {
 
         film.setId(getNextId());
         films.put(film.getId(), film);
-        log.info("Фильм успешно добавлен");
+        // log.info("Фильм успешно добавлен");
         return film;
     }
 
     @Override
     public Film update(Film newFilm) {
         if (newFilm.getId() == null) {
-            log.error("Ошибка валидации фильма: id должен быть указан.");
+            // log.error("Ошибка валидации фильма: id должен быть указан.");
             throw new ValidationException("Id должен быть указан.");
         }
         if (films.containsKey(newFilm.getId())) {
@@ -47,7 +47,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
             oldFilm.setName(newFilm.getName());
             oldFilm.setDuration(newFilm.getDuration());
-            log.info("Фильм успешно обновлен");
+            //  log.info("Фильм успешно обновлен");
             return oldFilm;
         }
         throw new NotFoundException("Пост с id " + newFilm.getId() + " не найден.");

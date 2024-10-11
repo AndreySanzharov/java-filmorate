@@ -22,7 +22,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        log.info("Получен запрос на получение всех пользователей");
         return users.values();
     }
 
@@ -32,19 +31,16 @@ public class InMemoryUserStorage implements UserStorage {
             user.setName(user.getLogin());
         }
 
-        validate(user, false); // Валидация после установки имени
+        validate(user, false);
 
         user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("Создание пользователя {}", user);
-        log.info("Пользователь создан");
         return user;
     }
 
     @Override
     public User update(User newUser) {
         if (users.containsKey(newUser.getId())) {
-            validate(newUser, true);
             User oldUser = users.get(newUser.getId());
 
             oldUser.setEmail(newUser.getEmail());
@@ -55,16 +51,13 @@ public class InMemoryUserStorage implements UserStorage {
             } else {
                 oldUser.setName(newUser.getName());
             }
-
-            log.info("Пользователь обновлен", oldUser);
             return oldUser;
         }
-        throw new NotFoundException("Пользователь с id " + newUser.getId() + " не найден.");
+        throw new RuntimeException();
     }
 
     @Override
     public User addFriend(int userId, int friendId) {
-        log.info("Добавление друга");
         getUserById(userId).getFriends().add(friendId);
         getUserById(friendId).getFriends().add(userId);
         return getUserById(userId);
@@ -72,16 +65,13 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User deleteFriend(int userId, int friendId) {
-        log.info("Удаление друга {}", users.get(friendId));
         getUserById(userId).getFriends().remove(friendId);
         getUserById(friendId).getFriends().remove(userId);
-        log.info("Друг добавлен");
         return getUserById(userId);
     }
 
     @Override
     public List<User> getFriendsById(int id) {
-        log.info("Получение друзей по id");
         return users.values().stream().filter(user -> user.getFriends().contains(id)).collect(Collectors.toList());
     }
 
@@ -96,7 +86,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getMutualFriendsById(int userId, int otherId) {
-        log.info("Получение общих друзей");
         List<User> mutual = new ArrayList<>();
         for (Integer id : getUserById(userId).getFriends()) {
             if (getUserById(otherId).getFriends().contains(id)) {
@@ -108,7 +97,6 @@ public class InMemoryUserStorage implements UserStorage {
 
     private void validate(User user, boolean isUpdate) {
         if (isUpdate && (user.getId() == null)) {
-            log.error("Ошибка валидации пользователя: id должен быть указан при обновлении.");
             throw new ValidationException("Id должен быть указан при обновлении.");
         }
     }

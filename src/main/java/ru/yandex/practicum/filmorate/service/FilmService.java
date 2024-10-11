@@ -22,23 +22,23 @@ public class FilmService {
     }
 
     public void like(Long filmId, Long userId) {
-        log.info("Пользователь {} ставит лайк фильму {}", userId, filmStorage.getFilmById(filmId));
+        // log.info("Пользователь {} ставит лайк фильму {}", userId, filmStorage.getFilmById(filmId));
         filmStorage.getFilmById(filmId).getLikes().add(userId);
-        log.info("Лайк поставлен");
+        // log.info("Лайк поставлен");
     }
 
     public void deleteLike(Long filmId, Long userId) {
-        log.info("Пользователь {} удаляет лайк с фильма {}", userId, filmStorage.getFilmById(filmId));
+        //log.info("Пользователь {} удаляет лайк с фильма {}", userId, filmStorage.getFilmById(filmId));
         if (filmStorage.getFilmById(filmId).getLikes().contains(userId)) {
             filmStorage.getFilmById(filmId).getLikes().remove(userId);
-            log.info("Лайк удален");
+            //log.info("Лайк удален");
         } else {
-            throw new NotFoundException("Пользователь не найден или не ставил лайк фильму");
+            throw new NotFoundException("user not found");
         }
     }
 
     public List<Film> getPopularFilms(int count) {
-        log.info("Вывод топ {} фильмов", count);
+        //  log.info("Вывод топ {} фильмов", count);
         return filmStorage.findAll().stream()
                 .sorted(Comparator.comparingInt((Film film) -> film.getLikes().size()).reversed())
                 .limit(count)
