@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class Film {
@@ -21,4 +23,6 @@ public class Film {
 
     @PositiveOrZero(message = "Продолжительность должна быть положительным числом или нулем")
     private int duration;
+
+    private List<Long> likes = new ArrayList<>();
 }
