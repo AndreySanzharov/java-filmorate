@@ -52,16 +52,22 @@ public class InMemoryUserStorage implements UserStorage {
                 oldUser.setName(newUser.getName());
             }
             return oldUser;
+        } else {
+            throw new NotFoundException("Пользователь с ID " + newUser.getId() + " не найден.");
         }
-        throw new RuntimeException();
     }
 
     @Override
     public User addFriend(int userId, int friendId) {
-        getUserById(userId).getFriends().add(friendId);
-        getUserById(friendId).getFriends().add(userId);
-        return getUserById(userId);
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+
+        user.getFriends().add(friendId);
+        friend.getFriends().add(userId);
+
+        return user;
     }
+
 
     @Override
     public User deleteFriend(int userId, int friendId) {

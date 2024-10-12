@@ -33,7 +33,7 @@ public class FilmService {
             filmStorage.getFilmById(filmId).getLikes().remove(userId);
             //log.info("Лайк удален");
         } else {
-            throw new NotFoundException("user not found");
+            throw new NotFoundException("Пользователь не найден");
         }
     }
 
