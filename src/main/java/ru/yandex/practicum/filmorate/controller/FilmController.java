@@ -33,7 +33,7 @@ public class FilmController {
         return filmStorage.findAll();
     }
 
-    @GetMapping("/films/popular?count={count}")
+    @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
     }
@@ -48,12 +48,12 @@ public class FilmController {
         return filmStorage.update(newFilm);
     }
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     public void like(@PathVariable String id, @PathVariable String userId) {
         filmService.like(Long.valueOf(id), Long.valueOf(userId));
     }
 
-    @DeleteMapping("/films/{id}/like/{userId}")
+    @DeleteMapping("{id}/like/{userId}")
     public void deleteLike(@PathVariable String id, @PathVariable String userId) {
         filmService.deleteLike(Long.valueOf(id), Long.valueOf(userId));
     }

@@ -27,6 +27,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User create(User user) {
+        log.info("Создание пользователя");
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
@@ -35,11 +36,13 @@ public class InMemoryUserStorage implements UserStorage {
 
         user.setId(getNextId());
         users.put(user.getId(), user);
+        log.info("Пользователь создан");
         return user;
     }
 
     @Override
     public User update(User newUser) {
+        log.info("Обновление пользователя");
         if (users.containsKey(newUser.getId())) {
             User oldUser = users.get(newUser.getId());
 
@@ -51,6 +54,7 @@ public class InMemoryUserStorage implements UserStorage {
             } else {
                 oldUser.setName(newUser.getName());
             }
+            log.info("Пользователь обновлен");
             return oldUser;
         } else {
             throw new NotFoundException("Пользователь с ID " + newUser.getId() + " не найден.");
@@ -59,30 +63,38 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addFriend(int userId, int friendId) {
+        log.info("Добавление в друзья");
         User user = getUserById(userId);
         User friend = getUserById(friendId);
 
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
-
+        log.info("Пользователь добавлен в друзья");
         return user;
     }
 
 
     @Override
     public User deleteFriend(int userId, int friendId) {
+        log.info("Удаление из друзей");
         getUserById(userId).getFriends().remove(friendId);
         getUserById(friendId).getFriends().remove(userId);
+        log.info("Пользователь удален из друзей");
         return getUserById(userId);
     }
 
     @Override
     public List<User> getFriendsById(int id) {
-        return users.values().stream().filter(user -> user.getFriends().contains(id)).collect(Collectors.toList());
+        log.info("Получение друга по id");
+        User user = getUserById(id);
+        return user.getFriends().stream()
+                .map(this::getUserById)
+                .collect(Collectors.toList());
     }
 
     @Override
     public User getUserById(int userId) {
+        log.info("Получение пользователя по id");
         if (users.containsKey((long) userId)) {
             return users.get((long) userId);
         } else {
@@ -92,6 +104,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public List<User> getMutualFriendsById(int userId, int otherId) {
+        log.info("Получение общих друзей по id");
         List<User> mutual = new ArrayList<>();
         for (Integer id : getUserById(userId).getFriends()) {
             if (getUserById(otherId).getFriends().contains(id)) {
