@@ -6,31 +6,25 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
     public Collection<Film> findAll() {
-        return films.values();
+        return List.copyOf(films.values());
     }
 
     @Override
     public Film create(Film film) {
-        log.info("Создание фильма");
-        validateReleaseDate(film.getReleaseDate());
-
-        film.setId(getNextId());
         films.put(film.getId(), film);
-        log.info("Фильм создан");
         return film;
     }
 
@@ -55,30 +49,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public Film getFilmById(Long filmId) {
         log.info("Получение фильма по id");
-        if (films.containsKey(filmId)) {
-            return films.get(filmId);
-        } else {
-            throw new NotFoundException("Фильм не найден");
-        }
-
-    }
-
-    private void validateReleaseDate(LocalDate releaseDate) {
-        LocalDate earliestReleaseDate = LocalDate.of(1895, 12, 28); // Самая ранняя допустимая дата
-        if (releaseDate.isBefore(earliestReleaseDate)) {
-            throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года.");
-        }
-    }
-
-    private long getNextId() {
-        Set<Long> allId = films.keySet();
-        long maxId = 0;
-        for (long id : allId) {
-            if (id > maxId) {
-                maxId = id;
-            }
-        }
-        long currentID = ++maxId;
-        return currentID;
+        return Optional.ofNullable(films.get(filmId))
+                .orElseThrow(() -> new NotFoundException("Фильм с ID " + filmId + " не найден"));
     }
 }

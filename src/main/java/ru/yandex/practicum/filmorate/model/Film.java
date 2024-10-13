@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -21,8 +22,9 @@ public class Film {
     @Past(message = "Самая ранняя дата релиза может быть: 28.12.1895.")
     private LocalDate releaseDate;
 
-    @PositiveOrZero(message = "Продолжительность должна быть положительным числом или нулем")
+    @Positive(message = "Продолжительность должна быть положительным числом или нулем")
     private int duration;
 
+    @JsonIgnore
     private List<Long> likes = new ArrayList<>();
 }
