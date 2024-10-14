@@ -16,7 +16,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        return users.values();
+        return List.copyOf(users.values());
     }
 
     @Override
@@ -25,83 +25,95 @@ public class InMemoryUserStorage implements UserStorage {
 
         user.setId(getNextId());
         users.put(user.getId(), user);
-        log.info("Пользователь создан");
+        log.info("Пользователь создан: {}", user);
         return user;
     }
 
     @Override
     public User update(User newUser) {
-        log.info("Обновление пользователя");
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
+        log.info("Обновление пользователя: {}", newUser.getId());
+        return getUserById(Math.toIntExact(newUser.getId()))
+                .map(oldUser -> {
+                    oldUser.setEmail(newUser.getEmail());
+                    oldUser.setLogin(newUser.getLogin());
+                    oldUser.setBirthday(newUser.getBirthday());
 
-            oldUser.setEmail(newUser.getEmail());
-            oldUser.setLogin(newUser.getLogin());
-            oldUser.setBirthday(newUser.getBirthday());
-            if (newUser.getName() == null || newUser.getName().isBlank()) {
-                oldUser.setName(newUser.getLogin());
-            } else {
-                oldUser.setName(newUser.getName());
-            }
-            log.info("Пользователь обновлен");
-            return oldUser;
-        } else {
-            throw new NotFoundException("Пользователь с ID " + newUser.getId() + " не найден.");
-        }
+                    if (newUser.getName() == null || newUser.getName().isBlank()) {
+                        oldUser.setName(newUser.getLogin());
+                    } else {
+                        oldUser.setName(newUser.getName());
+                    }
+                    log.info("Пользователь обновлен: {}", oldUser);
+                    return oldUser;
+                })
+                .orElseThrow(() -> new NotFoundException("Пользователь с ID " + newUser.getId() + " не найден."));
     }
 
     @Override
     public User addFriend(int userId, int friendId) {
-        log.info("Добавление в друзья");
-        User user = getUserById(userId);
-        User friend = getUserById(friendId);
+        log.info("Добавление в друзья пользователя с ID: {}", userId);
+        User user = getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден."));
+        User friend = getUserById(friendId).orElseThrow(() -> new NotFoundException("Друг с ID " + friendId + " не найден."));
 
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
-        log.info("Пользователь добавлен в друзья");
+        log.info("Пользователь с ID {} добавлен в друзья пользователю с ID {}", friendId, userId);
         return user;
     }
 
-
     @Override
     public User deleteFriend(int userId, int friendId) {
-        log.info("Удаление из друзей");
-        getUserById(userId).getFriends().remove(friendId);
-        getUserById(friendId).getFriends().remove(userId);
-        log.info("Пользователь удален из друзей");
-        return getUserById(userId);
+        log.info("Удаление из друзей пользователя с ID: {}", userId);
+        User user = getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден."));
+        User friend = getUserById(friendId).orElseThrow(() -> new NotFoundException("Друг с ID " + friendId + " не найден."));
+
+        user.getFriends().remove(friendId);
+        friend.getFriends().remove(userId);
+        log.info("Пользователь с ID {} удален из друзей пользователя с ID {}", friendId, userId);
+        return user;
     }
 
     @Override
     public List<User> getFriendsById(int id) {
-        log.info("Получение друга по id");
-        User user = getUserById(id);
+        log.info("Получение друзей пользователя с ID: {}", id);
+        User user = getUserById(id).orElseThrow(() -> new NotFoundException("Пользователь с ID " + id + " не найден."));
+
         return user.getFriends().stream()
                 .map(this::getUserById)
+                .map(optionalUser -> optionalUser.orElseThrow(() -> new NotFoundException("Друг не найден.")))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public User getUserById(int userId) {
-        log.info("Получение пользователя по id");
+    public Optional<User> getUserById(int userId) {
+        log.info("Получение пользователя по id: {}", userId);
+
+        // Проверяем наличие пользователя и выбрасываем исключение, если он не найден
         return Optional.ofNullable(users.get((long) userId))
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+                .or(() -> {
+                    log.error("Пользователь с ID {} не найден", userId);
+                    throw new NotFoundException("Пользователь с ID " + userId + " не найден.");
+                });
     }
 
     @Override
     public List<User> getMutualFriendsById(int userId, int otherId) {
-        log.info("Получение общих друзей по id");
-        List<User> mutual = new ArrayList<>();
-        for (Integer id : getUserById(userId).getFriends()) {
-            if (getUserById(otherId).getFriends().contains(id)) {
-                mutual.add(getUserById(id));
-            }
-        }
-        return mutual;
+        log.info("Получение общих друзей для пользователей с ID: {} и {}", userId, otherId);
+
+        User user = getUserById(userId).orElseThrow(() -> new NotFoundException("Пользователь с ID " + userId + " не найден."));
+        User otherUser = getUserById(otherId).orElseThrow(() -> new NotFoundException("Друг с ID " + otherId + " не найден."));
+
+        List<User> mutualFriends = user.getFriends().stream()
+                .filter(friendId -> otherUser.getFriends().contains(friendId))
+                .map(this::getUserById)
+                .map(optionalUser -> optionalUser.orElseThrow(() -> new NotFoundException("Друг не найден.")))
+                .collect(Collectors.toList());
+
+        log.info("Общие друзья найдены: {}", mutualFriends);
+        return mutualFriends;
     }
 
-
     private long getNextId() {
-        return ++currentID; // Увеличиваем и возвращаем новый ID
+        return ++currentID;
     }
 }

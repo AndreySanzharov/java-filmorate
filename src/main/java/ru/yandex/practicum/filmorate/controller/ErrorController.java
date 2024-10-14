@@ -24,17 +24,10 @@ public class ErrorController {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ValidationException.class)
-    public ErrorResponse handleValidationException(final ValidationException validationException) {
-        log.error("Ошибка валидации: {}", validationException.getMessage(), validationException);
-        return new ErrorResponse(validationException.getMessage());
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException ex) {
-        log.error("Validation failed: {}", ex.getMessage(), ex);
-        return new ErrorResponse(ex.getMessage());
+    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    public ErrorResponse handleBadRequestExceptions(final Exception ex) {
+        log.error("Ошибка валидации или некорректного запроса: {}", ex.getMessage(), ex);
+        return new ErrorResponse("Некорректные параметры: " + ex.getMessage());
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -42,12 +35,5 @@ public class ErrorController {
     public ErrorResponse handleException(final Exception ex) {
         log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
         return new ErrorResponse("An unexpected error occurred. Please try again later.");
-    }
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ErrorResponse handleConstraintViolationException(ConstraintViolationException ex) {
-        log.error("Validation failed: {}", ex.getMessage(), ex);
-        return new ErrorResponse("Incorrect parameters: " + ex.getMessage());
     }
 }

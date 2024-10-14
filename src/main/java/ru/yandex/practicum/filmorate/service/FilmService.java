@@ -32,13 +32,13 @@ public class FilmService {
 
     public void like(Long filmId, Long userId) {
         log.info("Запрос на лайк");
-        if (filmStorage.getFilmById(filmId) == null) {
+        if (getFilmById(filmId) == null) {
             throw new NotFoundException("Фильм не найден");
         }
         if (userStorage.getUserById(Math.toIntExact(userId)) == null) {
             throw new NotFoundException("Пользователь не найден");
         }
-        filmStorage.getFilmById(filmId).getLikes().add(userId);
+        getFilmById(filmId).getLikes().add(userId);
         log.info("Лайк поставлен");
     }
 
@@ -56,8 +56,8 @@ public class FilmService {
 
     public void deleteLike(Long filmId, Long userId) {
         log.info("Запрос на удаление лайка");
-        if (filmStorage.getFilmById(filmId).getLikes().remove(userId)) {
-            filmStorage.getFilmById(filmId).getLikes().remove(userId);
+        if (getFilmById(filmId).getLikes().remove(userId)) {
+            getFilmById(filmId).getLikes().remove(userId);
             log.info("Лайк удален");
         } else {
             throw new NotFoundException("Пользователь не найден");
@@ -78,6 +78,12 @@ public class FilmService {
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года.");
         }
     }
+
+    public Film getFilmById(Long filmId) {
+        return filmStorage.getFilmById(filmId)
+                .orElseThrow(() -> new NotFoundException("Фильм с ID " + filmId + " не найден"));
+    }
+
 
     private long getNextId() {
         return ++currentID;
