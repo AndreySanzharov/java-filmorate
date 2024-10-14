@@ -1,104 +1,54 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
+@Validated
 public class FilmController {
-    private final Map<Long, Film> films = new HashMap<>();
-    private long currentID;
+    private final FilmService filmService;
 
 
     @GetMapping
     public Collection<Film> findAll() {
-        log.info("Получен запрос на получение всех фильмов");
-        return films.values();
+        return filmService.findAll();
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getPopularFilms(@RequestParam(value = "count", defaultValue = "10") @Positive int count) {
+        return filmService.getPopularFilms(count);
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
-        log.info("Cоздание фильма {}", film);
-        validate(film, false);
-
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Фильм успешно добавлен");
-        return film;
+    public Film create(@Valid @RequestBody Film film) {
+        return filmService.create(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        if (newFilm.getId() == null) {
-            log.error("Ошибка валидации фильма: id должен быть указан.");
-            throw new ValidationException("Id должен быть указан.");
-        }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-            validate(newFilm, true);
-            oldFilm.setDescription(newFilm.getDescription());
-            oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            oldFilm.setName(newFilm.getName());
-            oldFilm.setDuration(newFilm.getDuration());
-            log.info("Фильм успешно обновлен");
-            return oldFilm;
-        }
-        throw new NotFoundException("Пост с id " + newFilm.getId() + " не найден.");
+    public Film update(@Valid @RequestBody Film newFilm) {
+        return filmService.update(newFilm);
     }
 
-    private void validate(Film film, boolean isUpdate) {
-
-        if (isUpdate && (film.getId() == null)) {
-            log.error("Ошибка валидации фильма: id должен быть указан при обновлении.");
-            throw new ValidationException("Id должен быть указан при обновлении.");
-        }
-        if (film.getName().isBlank() || film.getName() == null) {
-            log.error("Ошибка валидации фильма: пустое название");
-            throw new ValidationException("Название фильма не может быть пустым.");
-        }
-        if (film.getDescription().length() > 200) {
-            log.error("Ошибка валидации фильма: превышен лимит символов в описании");
-            throw new ValidationException("Максимальная длина описания - 200 символов. Фактичкеская длина: "
-                    + film.getDescription().length());
-        }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
-            log.error("Ошибка валидации фильма: неверная дата релиза");
-            throw new ValidationException("Саммая ранняя дата релиза может бьть: 28.12.1895.");
-        }
-        if (film.getDuration() < 0) {
-            log.error("Ошибка валидации фильма: продолжительность должна быть положительным числом");
-            throw new ValidationException("Продолжительность должна быть положительным числом.");
-        }
-        if (film.getDescription().isBlank() || film.getDescription() == null) {
-            log.error("Ошибка валидации фильма:  описание не может быть пустым");
-            throw new ValidationException("Описание не может быть пустым.");
-        }
+    @PutMapping("/{id}/like/{userId}")
+    public void like(@PathVariable String id, @PathVariable String userId) {
+        filmService.like(Long.valueOf(id), Long.valueOf(userId));
     }
 
-    private long getNextId() {
-        Set<Long> allId = films.keySet();
-        long maxId = 0;
-        for (long id : allId) {
-            if (id > maxId) {
-                maxId = id;
-            }
-        }
-        currentID = ++maxId;
-        return currentID;
+    @DeleteMapping("{id}/like/{userId}")
+    public void deleteLike(@PathVariable String id, @PathVariable String userId) {
+        filmService.deleteLike(Long.valueOf(id), Long.valueOf(userId));
     }
+
 }
