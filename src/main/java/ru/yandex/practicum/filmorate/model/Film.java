@@ -27,4 +27,6 @@ public class Film {
 
     @JsonIgnore
     private List<Long> likes = new ArrayList<>();
+
+    private String rating;
 }
