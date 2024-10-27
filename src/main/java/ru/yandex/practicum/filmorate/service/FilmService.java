@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequiredArgsConstructor
 public class FilmService {
-    @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
