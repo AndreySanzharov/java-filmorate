@@ -1,30 +1,30 @@
 -- пользователи
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT PRIMARY KEY,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL UNIQUE,
     login VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255),
     birthday DATE NOT NULL
 );
 
+-- дружеские связи
+CREATE TABLE IF NOT EXISTS friendships (
+    user_id BIGINT NOT NULL,
+    friend_id BIGINT NOT NULL,
+    status VARCHAR(20) DEFAULT 'PENDING', -- статус может быть 'PENDING', 'CONFIRMED', 'REJECTED'
+    PRIMARY KEY (user_id, friend_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- фильмы
 CREATE TABLE IF NOT EXISTS films (
-    id BIGINT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR NOT NULL,
     description TEXT,
     release_date DATE,
     duration INTEGER,
     rate INTEGER
-);
-
--- дружеские связи
-CREATE TABLE IF NOT EXISTS friendships (
-    user_id BIGINT,
-    friend_id BIGINT,
-    status VARCHAR(50),
-    PRIMARY KEY (user_id, friend_id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- оценки фильмов

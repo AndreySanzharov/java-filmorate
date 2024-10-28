@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -12,27 +13,19 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    @Qualifier("userDbStorage") // Указываем конкретный бин
+    @Qualifier("userDbStorage")
     private final UserStorage userStorage;
 
-
     public User addFriend(int userId, int friendId) {
-        userStorage.addFriend(userId, friendId);
-        return getUserById(userId);
+        return userStorage.addFriend(userId, friendId);
     }
 
-    public User create(User user) {
-        return userStorage.create(user);
-    }
-
-    public User update(User newUser) {
-        return userStorage.update(newUser);
-
-    }
+//    public User confirmFriend(int userId, int friendId) {
+//        return userStorage.confirmFriend(userId, friendId);
+//    }
 
     public User deleteFriend(int userId, int friendId) {
-        userStorage.deleteFriend(userId, friendId);
-        return getUserById(userId);
+        return userStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriendsById(int id) {
@@ -48,6 +41,14 @@ public class UserService {
     }
 
     public User getUserById(int userId) {
-        return userStorage.getUserById(userId).get();
+        return userStorage.getUserById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public User create(User user) {
+        return userStorage.create(user);
+    }
+
+    public User update(User user) {
+        return userStorage.update(user);
     }
 }

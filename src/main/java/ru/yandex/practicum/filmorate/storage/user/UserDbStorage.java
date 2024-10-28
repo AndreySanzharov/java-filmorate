@@ -20,12 +20,13 @@ public class UserDbStorage implements UserStorage {
 
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?) returning id";
+    private static final String INSERT_QUERY = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?) RETURNING id";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
-    private static final String ADD_FRIEND_QUERY = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
-    private static final String DELETE_FRIEND_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
-    private static final String GET_FRIENDS_QUERY = "SELECT * FROM users u JOIN friends f ON u.id = f.friend_id WHERE f.user_id = ?";
-    private static final String GET_MUTUAL_FRIENDS_QUERY = "SELECT * FROM users u JOIN friends f1 ON u.id = f1.friend_id JOIN friends f2 ON u.id = f2.friend_id WHERE f1.user_id = ? AND f2.user_id = ?";
+    private static final String ADD_FRIEND_QUERY = "INSERT INTO friendships (user_id, friend_id, status) VALUES (?, ?, 'PENDING')";
+    // private static final String CONFIRM_FRIEND_QUERY = "UPDATE friendships SET status = 'CONFIRMED' WHERE user_id = ? AND friend_id = ?";
+    private static final String DELETE_FRIEND_QUERY = "DELETE FROM friendships WHERE user_id = ? AND friend_id = ?";
+    private static final String GET_FRIENDS_QUERY = "SELECT * FROM users u JOIN friendships f ON u.id = f.friend_id WHERE f.user_id = ? AND f.status = 'CONFIRMED'";
+    private static final String GET_MUTUAL_FRIENDS_QUERY = "SELECT * FROM users u JOIN friendships f1 ON u.id = f1.friend_id JOIN friendships f2 ON u.id = f2.friend_id WHERE f1.user_id = ? AND f2.user_id = ? AND f1.status = 'CONFIRMED' AND f2.status = 'CONFIRMED'";
 
     @Override
     public List<User> findAll() {
@@ -70,6 +71,12 @@ public class UserDbStorage implements UserStorage {
         jdbcTemplate.update(ADD_FRIEND_QUERY, userId, friendId);
         return getUserById(userId).orElseThrow(() -> new NotFoundException("User not found for adding friend"));
     }
+
+//     @Override
+//    public User confirmFriend(int userId, int friendId) {
+//        jdbcTemplate.update(CONFIRM_FRIEND_QUERY, userId, friendId);
+//        return getUserById(userId).orElseThrow(() -> new NotFoundException("User not found for confirming friend"));
+//    }
 
     @Override
     public User deleteFriend(int userId, int friendId) {
