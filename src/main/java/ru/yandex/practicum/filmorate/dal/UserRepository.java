@@ -2,18 +2,20 @@ package ru.yandex.practicum.filmorate.dal;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.Optional;
 
+@Repository
 public class UserRepository extends BaseRepository implements UserStorage {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM users";
-    private static final String INSERT_QUERY = "INSERT INTO users (email, login, username, birthday) VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, username = ?, birthday = ? WHERE user_id = ?";
-    private static final String QUERY_FOR_USER_BY_ID = "SELECT * FROM users WHERE user_id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM users WHERE user_id = ?";
+    private static final String INSERT_QUERY = "INSERT INTO " + "USERS (EMAIL, LOGIN, USERNAME, BIRTHDAY) VALUES (?, ?, ?, ?)";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM USERS";
+    private static final String UPDATE_QUERY = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USERNAME = ?, " + "BIRTHDAY = ? WHERE USER_ID = ?";
+    private static final String USER_BY_ID_QUERY = "SELECT * FROM USERS WHERE USER_ID = ?";
+    private static final String DELETE_QUERY = "DELETE FROM USERS WHERE USER_ID = ?";
 
     public UserRepository(JdbcTemplate jdbc, RowMapper mapper) {
         super(jdbc, mapper);
@@ -26,33 +28,25 @@ public class UserRepository extends BaseRepository implements UserStorage {
 
     @Override
     public User create(User user) {
-        Integer id = insert(
-                INSERT_QUERY,
-                user.getEmail(),
-                user.getLogin(),
-                user.getName(),
-                user.getBirthday()
-        );
+        Integer id = insert(INSERT_QUERY, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
         user.setId(Long.valueOf(id));
         return user;
     }
 
     @Override
     public User update(User newUser) {
-        update(
-                UPDATE_QUERY,
+        update(UPDATE_QUERY,
                 newUser.getEmail(),
                 newUser.getLogin(),
                 newUser.getName(),
                 newUser.getBirthday(),
-                newUser.getId()
-        );
+                newUser.getId());
         return newUser;
     }
 
     @Override
     public Optional<User> getUserById(int userId) {
-        return findOne(QUERY_FOR_USER_BY_ID, userId);
+        return findOne(USER_BY_ID_QUERY, userId);
     }
 
     @Override

@@ -23,12 +23,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public List<User> getFriendsById(@PathVariable int id) {
+    public Collection<User> getFriendsById(@PathVariable int id) {
         return userService.getFriendsById(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getMutualFriendsById(@PathVariable String id, @PathVariable String otherId) {
+    public Collection<User> getMutualFriendsById(@PathVariable String id, @PathVariable String otherId) {
         return userService.getMutualFriendsById(Integer.parseInt(id), Integer.parseInt(otherId));
     }
 
