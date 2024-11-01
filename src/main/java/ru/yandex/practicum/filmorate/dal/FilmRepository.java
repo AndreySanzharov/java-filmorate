@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -23,10 +24,9 @@ public class FilmRepository extends BaseRepository implements FilmStorage {
     private final String TOP_FILMS_QUERY = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
             "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
             "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
-    private final String ADD_LIKE_QUERY = "INSERT INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
-    private final String DELETE_LIKE_QUERY = "DELETE FROM FILMS_LIKES WHERE FILM_ID = ? AND USER_ID = ?";
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper mapper) {
+
+    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
     }
 
@@ -77,15 +77,5 @@ public class FilmRepository extends BaseRepository implements FilmStorage {
     @Override
     public Collection<Film> getPopularFilms(Integer count) {
         return findMany(TOP_FILMS_QUERY, count);
-    }
-
-    @Override
-    public void addLike(Integer filmId, Integer userId) {
-        update(ADD_LIKE_QUERY, filmId, userId);
-    }
-
-    @Override
-    public void deleteLike(Integer filmId, Integer userId) {
-        update(DELETE_LIKE_QUERY, filmId, userId);
     }
 }

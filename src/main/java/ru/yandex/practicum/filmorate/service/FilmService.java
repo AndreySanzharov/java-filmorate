@@ -1,19 +1,19 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
+import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmRepository filmRepository;
-
-    public FilmService(FilmRepository filmRepository) {
-        this.filmRepository = filmRepository;
-    }
+    private final LikesRepository likesRepository;
 
     public Collection<Film> getAllFilms() {
         return filmRepository.findAll();
@@ -36,11 +36,11 @@ public class FilmService {
     }
 
     public void addLike(Integer filmId, Integer userId) {
-        filmRepository.addLike(filmId, userId);
+        likesRepository.addLike(filmId, userId);
     }
 
     public void deleteLike(Integer filmId, Integer userId) {
-        filmRepository.deleteLike(filmId, userId);
+        likesRepository.deleteLike(filmId, userId);
     }
 
     public Collection<Film> getPopularFilms(Integer count) {
