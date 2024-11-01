@@ -12,7 +12,7 @@ import java.util.Set;
 
 @Data
 public class Film {
-    private Long id;
+    private Integer id;
     @NotBlank(message = "Название фильма не может быть пустым.")
     private String name;
 
@@ -31,4 +31,6 @@ public class Film {
     private List<Long> likes = new ArrayList<>();
 
     private Set<Genre> genres = new HashSet<>();
+
+    private Mpa mpa;
 }
