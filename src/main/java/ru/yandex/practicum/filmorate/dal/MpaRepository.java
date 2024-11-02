@@ -9,14 +9,14 @@ import java.util.Collection;
 
 @Repository
 public class MpaRepository extends BaseRepository<Mpa> {
-    private static final String ALL_MPA_QUERY = "SELECT * FROM MPA_RATINGS";
-    private static final String GET_MPA_BY_ID_QUERY = "SELECT * FROM MPA_RATINGS WHERE MPA_ID = ?";
+    private final String ALL_MPA_QUERY = "SELECT * FROM MPA_RATINGS";
+    private final String GET_MPA_BY_ID_QUERY = "SELECT * FROM MPA_RATINGS WHERE MPA_ID = ?";
 
     public MpaRepository(JdbcTemplate jdbc, RowMapper<Mpa> mapper) {
         super(jdbc, mapper);
     }
 
-    public Collection<Mpa> getAllMpa() {
+    public Collection<Mpa> findAllMpa() {
         return findMany(ALL_MPA_QUERY);
     }
 
