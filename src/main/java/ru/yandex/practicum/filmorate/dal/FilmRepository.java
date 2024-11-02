@@ -3,29 +3,64 @@ package ru.yandex.practicum.filmorate.dal;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.util.Collection;
+import java.sql.ResultSet;
+import java.util.*;
 
 @Repository
-public class FilmRepository extends BaseRepository implements FilmStorage {
-    private final String INSERT_QUERY = "INSERT INTO FILMS " +
-            "(FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
-    private final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
-            "RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE FILM_ID = ?";
-    private final String GET_FILM_BY_ID_QUERY = "SELECT * FROM FILMS f, MPA_RATINGS m " +
-            "WHERE f.MPA_ID = m.MPA_ID AND f.FILM_ID = ?";
-    private final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
-    private final String FIND_ALL_FILMS_QUERY = "SELECT * FROM FILMS f, " +
+public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
+
+    private static final String FOR_ALL_FILMS_QUERY = "SELECT * FROM FILMS f, " +
             "MPA_RATINGS m WHERE f.MPA_ID = m.MPA_ID";
-    private final String POPULAR_FILMS_QUERY = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
+    private static final String FOR_FILM_BY_ID_QUERY = "SELECT * FROM FILMS f, MPA_RATINGS m " +
+            "WHERE f.MPA_ID = m.MPA_ID AND f.FILM_ID = ?";
+    private static final String INSERT_QUERY = "INSERT INTO FILMS " +
+            "(FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
+            "RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE FILM_ID = ?";
+    private static final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
+    private static final String TOP_FILMS_QUERY = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
             "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
             "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
-
+    private static final String ALL_GENRES_FILMS_QUERY = "SELECT * FROM FILMS_GENRES fg, " +
+            "GENRES g WHERE fg.GENRE_ID = g.GENRE_ID";
+    private static final String GENRES_BY_FILM_QUERY = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
+            "WHERE g.GENRE_ID = fg.GENRE_ID AND fg.FILM_ID = ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
+    }
+
+    public Collection<Film> findAll() {
+        Collection<Film> films = findMany(FOR_ALL_FILMS_QUERY);
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(genres.get(film.getId()));
+            }
+        }
+        return films;
+    }
+
+    @Override
+    public Film getFilmById(Integer id) {
+        Film film = findOne(FOR_FILM_BY_ID_QUERY, id);
+        film.setGenres(getGenresByFilm(id));
+        return film;
+    }
+
+    @Override
+    public Collection<Film> getPopularFilms(Integer count) {
+        Collection<Film> films = findMany(TOP_FILMS_QUERY, count);
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(genres.get(film.getId()));
+            }
+        }
+        return films;
     }
 
     @Override
@@ -43,37 +78,46 @@ public class FilmRepository extends BaseRepository implements FilmStorage {
     }
 
     @Override
-    public Film update(Film newFilm) {
+    public Film update(Film film) {
         update(
                 UPDATE_QUERY,
-                newFilm.getName(),
-                newFilm.getDescription(),
-                newFilm.getReleaseDate(),
-                newFilm.getDuration(),
-                newFilm.getMpa().getId(),
-                newFilm.getId()
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpa().getId(),
+                film.getId()
         );
-        return newFilm;
-    }
-
-    @Override
-    public void delete(Integer filmId) {
-        delete(DELETE_QUERY, filmId);
-    }
-
-    @Override
-    public Film getFilmById(Integer filmId) {
-        Film film = (Film) findOne(GET_FILM_BY_ID_QUERY, filmId);
         return film;
     }
 
     @Override
-    public Collection<Film> findAll() {
-        return findMany(FIND_ALL_FILMS_QUERY);
+    public void delete(Integer id) {
+        delete(DELETE_QUERY, id);
     }
 
-    @Override
-    public Collection<Film> getPopularFilms(Integer count) {
-        return findMany(POPULAR_FILMS_QUERY, count);
+    private Map<Integer, Set<Genre>> getAllGenres() {
+        Map<Integer, Set<Genre>> genres = new HashMap<>();
+        return jdbc.query(ALL_GENRES_FILMS_QUERY, (ResultSet rs) -> {
+            while (rs.next()) {
+                Integer filmId = rs.getInt("FILM_ID");
+                Integer genreId = rs.getInt("GENRE_ID");
+                String genreName = rs.getString("GENRE_NAME");
+                genres.computeIfAbsent(filmId, k -> new HashSet<>()).add(new Genre(genreId, genreName));
+            }
+            return genres;
+        });
+    }
+
+    private Set<Genre> getGenresByFilm(Integer filmId) {
+        return jdbc.query(GENRES_BY_FILM_QUERY, (ResultSet rs) -> {
+            Set<Genre> genres = new HashSet<>();
+            while (rs.next()) {
+                Integer genreId = rs.getInt("GENRE_ID");
+                String genreName = rs.getString("GENRE_NAME");
+                genres.add(new Genre(genreId, genreName));
+            }
+            return genres;
+        }, filmId);
     }
 }

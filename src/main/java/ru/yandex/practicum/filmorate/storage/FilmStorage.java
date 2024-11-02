@@ -8,13 +8,13 @@ public interface FilmStorage {
 
     Collection<Film> findAll();
 
-    Film create(Film film);
-
-    Film update(Film newFilm);
-
-    void delete(Integer filmId);
-
-    Film getFilmById(Integer filmId);
+    Film getFilmById(Integer id);
 
     Collection<Film> getPopularFilms(Integer count);
+
+    Film create(Film film);
+
+    Film update(Film film);
+
+    void delete(Integer id);
 }

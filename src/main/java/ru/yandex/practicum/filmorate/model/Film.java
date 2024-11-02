@@ -25,16 +25,20 @@ public class Film {
     private String description;
 
     @NotNull(message = "Дата релиза должна быть указана.")
-    @Past(message = "Самая ранняя дата релиза может быть: 28.12.1895.")
     private LocalDate releaseDate;
 
     @Positive(message = "Продолжительность должна быть положительным числом или нулем")
     private int duration;
 
     @JsonIgnore
-    private List<Long> likes = new ArrayList<>();
+    private List<Integer> likes = new ArrayList<>();
 
     private Set<Genre> genres = new HashSet<>();
 
     private Mpa mpa;
+
+    @AssertTrue(message = "Дата релиза должна быть не раньше 28 декабря 1895 года.")
+    public boolean isValidReleaseDate() {
+        return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
+    }
 }

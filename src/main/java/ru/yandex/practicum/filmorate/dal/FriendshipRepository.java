@@ -17,6 +17,7 @@ public class FriendshipRepository extends BaseRepository<User> {
             "(SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?) AND USER_ID IN " +
             "(SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?)";
 
+
     public FriendshipRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
     }
