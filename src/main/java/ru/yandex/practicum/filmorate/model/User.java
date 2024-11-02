@@ -10,7 +10,7 @@ import java.util.Set;
 
 @Data
 public class User {
-    private Long id;
+    private Integer id;
 
     @NotBlank(message = "Почта не должна быть пустой")
     @Email(message = "Email должен содержать символ '@'")

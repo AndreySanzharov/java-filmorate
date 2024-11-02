@@ -5,7 +5,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -26,7 +25,7 @@ public class GenreRepository extends BaseRepository<Genre> {
         return findMany(ALL_GENRES_QUERY);
     }
 
-    public Optional<User> getGenreById(Integer id) {
+    public Genre getGenreById(Integer id) {
         return findOne(GENRE_BY_ID_QUERY, id);
     }
 

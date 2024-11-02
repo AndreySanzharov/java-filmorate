@@ -5,23 +5,21 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 public class BaseRepository<T> {
     protected final JdbcTemplate jdbc;
     protected final RowMapper<T> mapper;
 
-    protected Optional<User> findOne(String query, Object... params) {
+    protected T findOne(String query, Object... params) {
         List<T> result = jdbc.query(query, mapper, params);
         if (result.isEmpty()) {
             throw new NotFoundException("Не удалось найти данные");
         }
-        return (Optional<User>) result.getFirst();
+        return result.getFirst();
     }
 
     protected List<T> findMany(String query, Object... params) {

@@ -4,10 +4,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Repository
 public class MpaRepository extends BaseRepository<Mpa> {
@@ -22,7 +20,7 @@ public class MpaRepository extends BaseRepository<Mpa> {
         return findMany(ALL_MPA_QUERY);
     }
 
-    public Optional<User> getMpaById(Integer mpaId) {
+    public Mpa getMpaById(Integer mpaId) {
         return findOne(GET_MPA_BY_ID_QUERY, mpaId);
     }
 }

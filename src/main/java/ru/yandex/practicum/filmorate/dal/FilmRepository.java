@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @Repository
 public class FilmRepository extends BaseRepository implements FilmStorage {
@@ -21,7 +19,7 @@ public class FilmRepository extends BaseRepository implements FilmStorage {
     private final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
     private final String FIND_ALL_FILMS_QUERY = "SELECT * FROM FILMS f, " +
             "MPA_RATINGS m WHERE f.MPA_ID = m.MPA_ID";
-    private final String TOP_FILMS_QUERY = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
+    private final String POPULAR_FILMS_QUERY = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
             "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
             "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
 
@@ -64,18 +62,18 @@ public class FilmRepository extends BaseRepository implements FilmStorage {
     }
 
     @Override
+    public Film getFilmById(Integer filmId) {
+        Film film = (Film) findOne(GET_FILM_BY_ID_QUERY, filmId);
+        return film;
+    }
+
+    @Override
     public Collection<Film> findAll() {
         return findMany(FIND_ALL_FILMS_QUERY);
     }
 
     @Override
-    public Optional<Film> getFilmById(Long filmId) {
-        Optional film = findOne(GET_FILM_BY_ID_QUERY, filmId);
-        return film;
-    }
-
-    @Override
     public Collection<Film> getPopularFilms(Integer count) {
-        return findMany(TOP_FILMS_QUERY, count);
+        return findMany(POPULAR_FILMS_QUERY, count);
     }
 }
