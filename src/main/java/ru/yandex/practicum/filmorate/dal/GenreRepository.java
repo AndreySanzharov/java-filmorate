@@ -1,19 +1,16 @@
 package ru.yandex.practicum.filmorate.dal;
 
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.*;
 
 @Repository
 public class GenreRepository extends BaseRepository<Genre> {
     private static final String FOR_ALL_GENRES_QUERY = "SELECT * FROM GENRES";
-    private static final String QUERY_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+    private static final String BACTCH_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
     private static final String FOR_GENRE_BY_ID_QUERY = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
     private static final String DELETE_ALL_FROM_FILM_QUERY = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
 
@@ -21,7 +18,7 @@ public class GenreRepository extends BaseRepository<Genre> {
         super(jdbc, mapper);
     }
 
-    public Collection<Genre> getAllGenres() {
+    public Collection<Genre> findAllGenres() {
         return findMany(FOR_ALL_GENRES_QUERY);
     }
 
@@ -29,20 +26,10 @@ public class GenreRepository extends BaseRepository<Genre> {
         return findOne(FOR_GENRE_BY_ID_QUERY, id);
     }
 
-    public void addGenres(Integer filmId, List<Integer> genresIds) {
-        batchUpdateBase(QUERY_QUERY, new BatchPreparedStatementSetter() {
-
-            @Override
-            public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
-                preparedStatement.setInt(1, filmId);
-                preparedStatement.setInt(2, genresIds.get(i));
-            }
-
-            @Override
-            public int getBatchSize() {
-                return genresIds.size();
-            }
-        });
+    public void addGenres(Integer filmId, List<Integer> genreIds) {
+        for (Integer genreId : genreIds) {
+            update(BACTCH_QUERY, filmId, genreId);
+        }
     }
 
     public void deleteGenres(Integer filmId) {

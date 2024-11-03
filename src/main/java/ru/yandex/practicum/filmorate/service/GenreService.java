@@ -16,7 +16,7 @@ public class GenreService {
     private final GenreRepository genreRepository;
 
     public Collection<Genre> getAllGenres() {
-        return genreRepository.getAllGenres();
+        return genreRepository.findAllGenres();
     }
 
     public Genre getGenreById(Integer id) {

@@ -1,14 +1,18 @@
 package ru.yandex.practicum.filmorate.dal;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
 
@@ -65,6 +69,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     @Override
     public Film create(Film film) {
+        validateMpaExists(film.getMpa().getId()); // Проверка существования MPA
+        validateGenresExist(film.getGenres());
         Integer id = insert(
                 INSERT_QUERY,
                 film.getName(),
@@ -76,6 +82,32 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         film.setId(id);
         return film;
     }
+
+    private void validateMpaExists(Integer mpaId) {
+        String checkMpaQuery = "SELECT COUNT(*) FROM MPA_RATINGS WHERE MPA_ID = ?";
+        Integer count = jdbc.queryForObject(checkMpaQuery, Integer.class, mpaId);
+        if (count == null || count == 0) {
+            log.error("MPA с id = {} не существует", mpaId);
+            throw new ValidationException("MPA с id = " + mpaId + " не существует.");
+        }
+    }
+
+    private void validateGenresExist(Set<Genre> genres) {
+        if (genres != null && !genres.isEmpty()) {
+            String genreIds = genres.stream()
+                    .map(genre -> String.valueOf(genre.getId()))
+                    .collect(Collectors.joining(", "));
+
+            String query = String.format("SELECT COUNT(*) FROM GENRES WHERE GENRE_ID IN (%s)", genreIds);
+            Integer existingCount = jdbc.queryForObject(query, Integer.class);
+
+            if (existingCount == null || existingCount < genres.size()) {
+                log.error("Один или несколько жанров не существуют: {}", genreIds);
+                throw new ValidationException("Некоторые жанры не существуют в базе данных.");
+            }
+        }
+    }
+
 
     @Override
     public Film update(Film film) {

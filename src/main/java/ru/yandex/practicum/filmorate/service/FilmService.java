@@ -1,8 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
@@ -13,26 +11,17 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 
-@Slf4j
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
     private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
 
-    public FilmService(@Autowired @Qualifier("filmRepository") FilmStorage filmStorage,
-                       @Autowired GenreRepository genreRepository,
-                       @Autowired LikesRepository likesRepository) {
-        this.filmStorage = filmStorage;
-        this.genreRepository = genreRepository;
-        this.likesRepository = likesRepository;
-    }
-
     public Film addLike(Integer filmId, Integer userId) {
         Film film = filmStorage.getFilmById(filmId);
         film.getLikes().add(userId);
         likesRepository.addLike(filmId, userId);
-        log.info("User {} liked film {}", userId, filmId);
         return film;
     }
 
@@ -40,7 +29,6 @@ public class FilmService {
         Film film = filmStorage.getFilmById(filmId);
         film.getLikes().remove(userId);
         likesRepository.deleteLike(filmId, userId);
-        log.info("User {} unliked film {}", userId, filmId);
         return film;
     }
 
@@ -69,7 +57,7 @@ public class FilmService {
 
     public Film update(Film film) {
         if (filmStorage.getFilmById(film.getId()) == null) {
-            throw new NotFoundException("Не передан идентификатор фильма");
+            throw new NotFoundException("Неверный идентификатор фильма");
         }
         Film updatedFilm = filmStorage.update(film);
         if (!updatedFilm.getGenres().isEmpty()) {

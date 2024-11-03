@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dal;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -55,13 +54,6 @@ public class BaseRepository<T> {
             return id;
         } else {
             throw new RuntimeException("Не удалось сохранить данные");
-        }
-    }
-
-    protected void batchUpdateBase(String query, BatchPreparedStatementSetter bps) {
-        int[] rowsUpdated = jdbc.batchUpdate(query, bps);
-        if (rowsUpdated.length == 0) {
-            throw new NotFoundException("Не удалось обновить данные");
         }
     }
 }
