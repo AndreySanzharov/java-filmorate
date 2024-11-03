@@ -30,6 +30,7 @@ public class Film {
     private List<Integer> likes = new ArrayList<>();
     private Set<Genre> genres = new HashSet<>();
     private Mpa mpa;
+
     @AssertTrue(message = "Дата релиза должна быть не раньше 28 декабря 1895 года.")
     public boolean isValidReleaseDate() {
         return releaseDate == null || !releaseDate.isBefore(LocalDate.of(1895, 12, 28));
