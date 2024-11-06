@@ -4,34 +4,49 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Repository
 public class FilmRepository extends BaseRepository<Film> implements FilmStorage {
-
-    private static final String FOR_ALL_FILMS_QUERY = "SELECT * FROM FILMS f, " +
-            "MPA_RATINGS m WHERE f.MPA_ID = m.MPA_ID";
-    private static final String FOR_FILM_BY_ID_QUERY = "SELECT * FROM FILMS f, MPA_RATINGS m " +
-            "WHERE f.MPA_ID = m.MPA_ID AND f.FILM_ID = ?";
-    private static final String INSERT_QUERY = "INSERT INTO FILMS " +
-            "(FILM_NAME, DESCRIPTION, RELEASE_DATE, DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
+    private static final String FOR_ALL_FILMS_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+            "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME " +
+            "FROM FILMS f " +
+            "JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID";
+    private static final String FOR_FILM_BY_ID_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+            "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME " +
+            "FROM FILMS f " +
+            "JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+            "WHERE f.FILM_ID = ?";
+    private static final String INSERT_QUERY = "INSERT INTO FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE, " +
+            "DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
             "RELEASE_DATE = ?, DURATION = ?, MPA_ID = ? WHERE FILM_ID = ?";
     private static final String DELETE_QUERY = "DELETE FROM FILMS WHERE FILM_ID = ?";
-    private static final String TOP_FILMS_QUERY = "SELECT * FROM FILMS f LEFT JOIN MPA_RATINGS m " +
-            "ON f.MPA_ID = m.MPA_ID LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES " +
-            "GROUP BY FILM_ID) fl ON f.FILM_ID = fl.FILM_ID ORDER BY LIKES DESC LIMIT ?";
-    private static final String ALL_GENRES_FILMS_QUERY = "SELECT * FROM FILMS_GENRES fg, " +
-            "GENRES g WHERE fg.GENRE_ID = g.GENRE_ID";
-    private static final String GENRES_BY_FILM_QUERY = "SELECT * FROM GENRES g, FILMS_GENRES fg " +
-            "WHERE g.GENRE_ID = fg.GENRE_ID AND fg.FILM_ID = ?";
+    private static final String TOP_FILMS_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+            "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, COALESCE(fl.LIKES, 0) AS LIKES " +
+            "FROM FILMS f " +
+            "LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+            "LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES GROUP BY FILM_ID) fl " +
+            "ON f.FILM_ID = fl.FILM_ID " +
+            "ORDER BY LIKES DESC LIMIT ?";
+    private static final String ALL_GENRES_FILMS_QUERY = "SELECT fg.FILM_ID, g.GENRE_ID, g.GENRE_NAME " +
+            "FROM FILMS_GENRES fg " +
+            "JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID";
+    private static final String GENRES_BY_FILM_QUERY = "SELECT g.GENRE_ID, g.GENRE_NAME " +
+            "FROM GENRES g " +
+            "JOIN FILMS_GENRES fg ON g.GENRE_ID = fg.GENRE_ID " +
+            "WHERE fg.FILM_ID = ?";
+
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -69,8 +84,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     @Override
     public Film create(Film film) {
-        validateMpaExists(film.getMpa().getId()); // Проверка существования MPA
-        validateGenresExist(film.getGenres());
         Integer id = insert(
                 INSERT_QUERY,
                 film.getName(),
@@ -81,31 +94,6 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         );
         film.setId(id);
         return film;
-    }
-
-    private void validateMpaExists(Integer mpaId) {
-        String checkMpaQuery = "SELECT COUNT(*) FROM MPA_RATINGS WHERE MPA_ID = ?";
-        Integer count = jdbc.queryForObject(checkMpaQuery, Integer.class, mpaId);
-        if (count == null || count == 0) {
-            log.error("MPA с id = {} не существует", mpaId);
-            throw new ValidationException("MPA с id = " + mpaId + " не существует.");
-        }
-    }
-
-    private void validateGenresExist(Set<Genre> genres) {
-        if (genres != null && !genres.isEmpty()) {
-            String genreIds = genres.stream()
-                    .map(genre -> String.valueOf(genre.getId()))
-                    .collect(Collectors.joining(", "));
-
-            String query = String.format("SELECT COUNT(*) FROM GENRES WHERE GENRE_ID IN (%s)", genreIds);
-            Integer existingCount = jdbc.queryForObject(query, Integer.class);
-
-            if (existingCount == null || existingCount < genres.size()) {
-                log.error("Один или несколько жанров не существуют: {}", genreIds);
-                throw new ValidationException("Некоторые жанры не существуют в базе данных.");
-            }
-        }
     }
 
 
