@@ -2,50 +2,57 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FriendshipRepository;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendshipRepository friendshipRepository;
 
-
-    public User addFriend(int userId, int friendId) {
-        userStorage.addFriend(userId, friendId);
-        return getUserById(userId);
+    public void addFriend(Integer id, Integer friendId) {
+        getUserById(id);
+        getUserById(friendId);
+        friendshipRepository.addFriend(id, friendId);
     }
 
-    public User create(User user) {
-        return userStorage.create(user);
+    public void deleteFriend(Integer id, Integer friendId) {
+        getUserById(id);
+        getUserById(friendId);
+        friendshipRepository.deleteFriend(id, friendId);
     }
 
-    public User update(User newUser) {
-        return userStorage.update(newUser);
-
+    public Collection<User> getMutualFriends(Integer id, Integer otherId) {
+        return friendshipRepository.getMutualFriends(id, otherId);
     }
 
-    public User deleteFriend(int userId, int friendId) {
-        userStorage.deleteFriend(userId, friendId);
-        return getUserById(userId);
-    }
-
-    public List<User> getFriendsById(int id) {
-        return userStorage.getFriendsById(id);
-    }
-
-    public List<User> getMutualFriendsById(int id, int otherId) {
-        return userStorage.getMutualFriendsById(id, otherId);
+    public Collection<User> getFriendsById(Integer id) {
+        getUserById(id);
+        return friendshipRepository.getFriendsById(id);
     }
 
     public Collection<User> findAll() {
         return userStorage.findAll();
     }
 
-    public User getUserById(int userId) {
-        return userStorage.getUserById(userId).get();
+    public User create(User user) {
+        return userStorage.create(user);
+    }
+
+    public User update(User user) {
+        getUserById(user.getId());
+        return userStorage.update(user);
+    }
+
+    public void delete(Integer id) {
+        userStorage.delete(id);
+    }
+
+    private User getUserById(Integer id) {
+        return userStorage.getUserById(id);
     }
 }

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.controller;
+package ru.yandex.practicum.filmorate.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -6,8 +6,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
-import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import ru.yandex.practicum.filmorate.model.ErrorResponse;
 
@@ -24,7 +22,8 @@ public class ErrorController {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class,
+            ConstraintViolationException.class, IllegalArgumentException.class})
     public ErrorResponse handleBadRequestExceptions(final Exception ex) {
         log.error("Ошибка валидации или некорректного запроса: {}", ex.getMessage(), ex);
         return new ErrorResponse("Некорректные параметры: " + ex.getMessage());
@@ -33,7 +32,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ErrorResponse handleException(final Exception ex) {
-        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
-        return new ErrorResponse("An unexpected error occurred. Please try again later.");
+        log.error("Произошла непредвиденная ошибка: {}", ex.getMessage(), ex);
+        return new ErrorResponse("Произошла непредвиденная ошибка. Пожалуйста, попробуйте позже.");
     }
 }
