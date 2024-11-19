@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Collection;
+import java.util.List;
 
 @Repository
 public class UserRepository extends BaseRepository<User> implements UserStorage {
@@ -23,7 +23,7 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     }
 
     @Override
-    public Collection<User> findAll() {
+    public List<User> findAll() {
         return findMany(ALL_USERS_QUERY);
     }
 

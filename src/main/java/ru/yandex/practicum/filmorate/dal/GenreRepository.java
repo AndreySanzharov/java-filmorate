@@ -10,7 +10,7 @@ import java.util.*;
 @Repository
 public class GenreRepository extends BaseRepository<Genre> {
     private static final String FOR_ALL_GENRES_QUERY = "SELECT * FROM GENRES";
-    private static final String BACTCH_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+    private static final String INSERT_GENRES_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
     private static final String FOR_GENRE_BY_ID_QUERY = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
     private static final String DELETE_ALL_FROM_FILM_QUERY = "DELETE FROM FILMS_GENRES WHERE FILM_ID = ?";
 
@@ -27,9 +27,10 @@ public class GenreRepository extends BaseRepository<Genre> {
     }
 
     public void addGenres(Integer filmId, List<Integer> genreIds) {
-        for (Integer genreId : genreIds) {
-            update(BACTCH_QUERY, filmId, genreId);
-        }
+        jdbc.batchUpdate(INSERT_GENRES_QUERY, genreIds, genreIds.size(), (ps, genreId) -> {
+            ps.setInt(1, filmId);
+            ps.setInt(2, genreId);
+        });
     }
 
     public void deleteGenres(Integer filmId) {

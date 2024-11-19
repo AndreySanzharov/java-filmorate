@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,11 +23,12 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME " +
             "FROM FILMS f " +
             "JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID";
-    private static final String FOR_FILM_BY_ID_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
-            "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME " +
-            "FROM FILMS f " +
-            "JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
-            "WHERE f.FILM_ID = ?";
+    private static final String FOR_FILM_BY_ID_QUERY =
+            "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+                    "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME " +
+                    "FROM FILMS f " +
+                    "INNER JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+                    "WHERE f.FILM_ID = ?";
     private static final String INSERT_QUERY = "INSERT INTO FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATE, " +
             "DURATION, MPA_ID) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE FILMS SET FILM_NAME = ?, DESCRIPTION = ?, " +
@@ -52,8 +54,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         super(jdbc, mapper);
     }
 
-    public Collection<Film> findAll() {
-        Collection<Film> films = findMany(FOR_ALL_FILMS_QUERY);
+    public List<Film> findAll() {
+        List<Film> films = findMany(FOR_ALL_FILMS_QUERY);
         Map<Integer, Set<Genre>> genres = getAllGenres();
         for (Film film : films) {
             if (genres.containsKey(film.getId())) {

@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import java.sql.PreparedStatement;
 import java.util.List;
 
-
 @RequiredArgsConstructor
 public class BaseRepository<T> {
     protected final JdbcTemplate jdbc;
@@ -27,10 +26,10 @@ public class BaseRepository<T> {
         return jdbc.query(query, mapper, params);
     }
 
-    protected boolean delete(String query, Object... params) {
-        int rowDeleted = jdbc.update(query, params);
-        return rowDeleted > 0;
+    protected void delete(String query, Object... params) {
+        jdbc.update(query, params);
     }
+
 
     protected boolean update(String query, Object... args) {
         int rowsUpdated = jdbc.update(query, args);
@@ -53,7 +52,7 @@ public class BaseRepository<T> {
         if (id != null) {
             return id;
         } else {
-            throw new RuntimeException("Не удалось сохранить данные");
+            throw new IllegalStateException("Не удалось сохранить данные");
         }
     }
 }
