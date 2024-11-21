@@ -18,4 +18,6 @@ public interface FilmStorage {
     Film update(Film film);
 
     void delete(Integer id);
+
+    Collection<Film> getCommonFilms(Integer userId, Integer friendId);
 }
