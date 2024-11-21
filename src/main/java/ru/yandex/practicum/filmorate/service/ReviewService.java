@@ -17,14 +17,14 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final FilmRepository filmRepository;
 
-    public Review addReview(Review review){
+    public Review addReview(Review review) {
         // Проверка существования пользователя
         if (!userRepository.existsById(review.getUserId())) {
             throw new NotFoundException("Пользователь с ID " + review.getUserId() + " не найден.");
         }
 
         //проверка существования фильма
-        if (!filmRepository.existsById(review.getFilmId())){
+        if (!filmRepository.existsById(review.getFilmId())) {
             throw new NotFoundException("Фильм с ID " + review.getFilmId() + " не найден.");
         }
 
