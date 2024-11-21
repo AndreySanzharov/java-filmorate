@@ -13,6 +13,8 @@ public interface FilmStorage {
 
     Collection<Film> getPopularFilms(Integer count);
 
+    Collection<Film> getPopularFilmsByGenreAndYear(int count, Integer genreId, Integer year);
+
     Film create(Film film);
 
     Film update(Film film);

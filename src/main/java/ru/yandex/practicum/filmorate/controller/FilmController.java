@@ -27,11 +27,6 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
-    @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilms(count);
-    }
-
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         return filmService.create(film);
@@ -57,5 +52,13 @@ public class FilmController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable int id) {
         filmService.delete(id);
+    }
+
+    @GetMapping("/popular")
+    public Collection<Film> getPopularFilmsByGenreAndYear(
+            @RequestParam(defaultValue = "10") int count,
+            @RequestParam(required = false) Integer genreId,
+            @RequestParam(required = false) Integer year) {
+        return filmService.getPopularFilmsByGenreAndYear(count, genreId, year);
     }
 }

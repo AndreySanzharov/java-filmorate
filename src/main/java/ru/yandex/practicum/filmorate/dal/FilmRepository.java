@@ -48,6 +48,17 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "FROM GENRES g " +
             "JOIN FILMS_GENRES fg ON g.GENRE_ID = fg.GENRE_ID " +
             "WHERE fg.FILM_ID = ?";
+    private static final String POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+            "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, COALESCE(fl.LIKES, 0) AS LIKES " +
+            "FROM FILMS f " +
+            "LEFT JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+            "LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES GROUP BY FILM_ID) fl " +
+            "ON f.FILM_ID = fl.FILM_ID " +
+            "LEFT JOIN FILMS_GENRES fg ON f.FILM_ID = fg.FILM_ID " +
+            "LEFT JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID " +
+            "WHERE (? IS NULL OR g.GENRE_ID = ?) AND (? IS NULL OR EXTRACT(YEAR FROM f.RELEASE_DATE) = ?) " +
+            "GROUP BY f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME " +
+            "ORDER BY LIKES DESC LIMIT ?";
 
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
@@ -75,6 +86,18 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> getPopularFilms(Integer count) {
         Collection<Film> films = findMany(TOP_FILMS_QUERY, count);
+        Map<Integer, Set<Genre>> genres = getAllGenres();
+        for (Film film : films) {
+            if (genres.containsKey(film.getId())) {
+                film.setGenres(genres.get(film.getId()));
+            }
+        }
+        return films;
+    }
+
+    @Override
+    public Collection<Film> getPopularFilmsByGenreAndYear(int count, Integer genreId, Integer year) {
+        Collection<Film> films = findMany(POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY, genreId, genreId, year, year, count);
         Map<Integer, Set<Genre>> genres = getAllGenres();
         for (Film film : films) {
             if (genres.containsKey(film.getId())) {
