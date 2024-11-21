@@ -38,8 +38,9 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     public Review updateReview(Review review) {
         update(UPDATE_REVIEW, review.getContent(), review.getIsPositive(), review.getReviewId());
-        return review;
+        return findReviewById(review.getReviewId());
     }
+
 
     public void deleteReview(Integer reviewId) {
         delete(DELETE_REVIEW, reviewId);

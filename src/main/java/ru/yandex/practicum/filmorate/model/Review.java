@@ -10,11 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class Review {
-    private Integer id;
-    private Integer reviewId;  // Уникальный идентификатор отзыва
-    private String content;    // Текст отзыва
-    private Boolean isPositive; // Тип отзыва (положительный/негативный)
-    private Integer userId;    // Идентификатор пользователя
-    private Integer filmId;    // Идентификатор фильма
-    private Integer useful;    // Рейтинг полезности
+    private Integer reviewId;
+    private String content;
+    private Boolean isPositive;
+    private Integer userId;
+    private Integer filmId;
+    private Integer useful;
 }

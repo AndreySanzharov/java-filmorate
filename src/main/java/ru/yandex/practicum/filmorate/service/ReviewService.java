@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewRepository;
+import ru.yandex.practicum.filmorate.dal.UserRepository;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -10,10 +13,21 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-
+    private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
+    private final FilmRepository filmRepository;
 
-    public Review addReview(Review review) {
+    public Review addReview(Review review){
+        // Проверка существования пользователя
+        if (!userRepository.existsById(review.getUserId())) {
+            throw new NotFoundException("Пользователь с ID " + review.getUserId() + " не найден.");
+        }
+
+        //проверка существования фильма
+        if (!filmRepository.existsById(review.getFilmId())){
+            throw new NotFoundException("Фильм с ID " + review.getFilmId() + " не найден.");
+        }
+
         validateReview(review);
         return reviewRepository.createReview(review);
     }

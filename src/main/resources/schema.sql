@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS REVIEWS (
     IS_POSITIVE BOOLEAN NOT NULL, -- Тип отзыва (положительный/негативный)
     USER_ID INT NOT NULL REFERENCES USERS (USER_ID) ON DELETE CASCADE, -- Автор отзыва
     FILM_ID INT NOT NULL REFERENCES FILMS (FILM_ID) ON DELETE CASCADE, -- Фильм, к которому относится отзыв
-    USEFUL INT DEFAULT 0 -- Рейтинг полезности отзыва (по умолчанию 0)
+    USEFUL INT
 );
 
 -- Таблица для лайков и дизлайков отзывов

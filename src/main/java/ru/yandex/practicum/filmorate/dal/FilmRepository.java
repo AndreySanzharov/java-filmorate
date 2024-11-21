@@ -118,6 +118,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, id);
     }
 
+    public boolean existsById(int filmId) {
+        String query = "SELECT COUNT(*) FROM FILMS WHERE FILM_ID = ?";
+        Integer count = jdbc.queryForObject(query, Integer.class, filmId);
+        return count != null && count > 0;
+    }
+
+
     private Map<Integer, Set<Genre>> getAllGenres() {
         Map<Integer, Set<Genre>> genres = new HashMap<>();
         return jdbc.query(ALL_GENRES_FILMS_QUERY, (ResultSet rs) -> {
