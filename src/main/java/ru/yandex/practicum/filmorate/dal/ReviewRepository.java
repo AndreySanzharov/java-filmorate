@@ -15,7 +15,12 @@ public class ReviewRepository extends BaseRepository<Review> {
     private static final String UPDATE_REVIEW = "UPDATE REVIEWS SET CONTENT = ?, IS_POSITIVE = ? WHERE REVIEW_ID = ?";
     private static final String DELETE_REVIEW = "DELETE FROM REVIEWS WHERE REVIEW_ID = ?";
     private static final String FIND_REVIEW_BY_ID = "SELECT * FROM REVIEWS WHERE REVIEW_ID = ?";
-    private static final String FIND_REVIEWS_BY_FILM = "SELECT * FROM REVIEWS WHERE FILM_ID = ? ORDER BY USEFUL DESC LIMIT ?";
+    private static final String FIND_REVIEWS_BY_FILM =
+            "SELECT r.REVIEW_ID, r.CONTENT, r.IS_POSITIVE, r.USER_ID, r.FILM_ID, r.USEFUL " +
+                    "FROM REVIEWS r " +
+                    "WHERE r.FILM_ID = ? " +
+                    "ORDER BY r.USEFUL DESC LIMIT ?";
+
     private static final String FIND_ALL_REVIEWS = "SELECT * FROM REVIEWS ORDER BY USEFUL DESC LIMIT ?";
     private static final String ADD_LIKE = "INSERT INTO REVIEWS_LIKES (REVIEW_ID, USER_ID, IS_LIKE) VALUES (?, ?, TRUE)";
     private static final String ADD_DISLIKE = "INSERT INTO REVIEW_DISLIKES (REVIEW_ID, USER_ID) VALUES (?, ?)";
@@ -40,7 +45,6 @@ public class ReviewRepository extends BaseRepository<Review> {
         update(UPDATE_REVIEW, review.getContent(), review.getIsPositive(), review.getReviewId());
         return findReviewById(review.getReviewId());
     }
-
 
     public void deleteReview(Integer reviewId) {
         delete(DELETE_REVIEW, reviewId);

@@ -66,5 +66,5 @@ CREATE TABLE IF NOT EXISTS REVIEWS_LIKES (
     REVIEW_ID INT NOT NULL REFERENCES REVIEWS (REVIEW_ID) ON DELETE CASCADE, -- Отзыв, который оценивается
     USER_ID INT NOT NULL REFERENCES USERS (USER_ID) ON DELETE CASCADE, -- Пользователь, поставивший лайк/дизлайк
     IS_LIKE BOOLEAN NOT NULL, -- Лайк (TRUE) или дизлайк (FALSE)
-    PRIMARY KEY (REVIEW_ID, USER_ID) -- Составной первичный ключ
+    PRIMARY KEY (REVIEW_ID, USER_ID)
 );

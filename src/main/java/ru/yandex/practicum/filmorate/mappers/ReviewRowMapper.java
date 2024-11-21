@@ -9,16 +9,16 @@ import java.sql.SQLException;
 
 @Component
 public class ReviewRowMapper implements RowMapper<Review> {
-
     @Override
     public Review mapRow(ResultSet rs, int rowNum) throws SQLException {
-        Review review = new Review();
-        review.setReviewId(rs.getInt("REVIEW_ID"));
-        review.setContent(rs.getString("CONTENT"));
-        review.setIsPositive(rs.getBoolean("IS_POSITIVE"));
-        review.setUserId(rs.getInt("USER_ID"));
-        review.setFilmId(rs.getInt("FILM_ID"));
-        review.setUseful(rs.getInt("USEFUL"));
-        return review;
+        return Review.builder()
+                .reviewId(rs.getInt("REVIEW_ID"))
+                .content(rs.getString("CONTENT"))
+                .isPositive(rs.getBoolean("IS_POSITIVE"))
+                .userId(rs.getInt("USER_ID"))
+                .filmId(rs.getInt("FILM_ID"))
+                .useful(rs.getInt("USEFUL"))
+                .build();
     }
 }
+
