@@ -31,6 +31,7 @@ public class Film {
     @JsonIgnore
     private List<Integer> likes = new ArrayList<>();
     private Set<Genre> genres = new HashSet<>();
+    private List<Director> directors = new ArrayList<>();
     private Mpa mpa;
 
     @AssertTrue(message = "Дата релиза должна быть не раньше 28 декабря 1895 года.")
