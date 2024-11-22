@@ -23,9 +23,9 @@ public class ReviewRepository extends BaseRepository<Review> {
 
     private static final String FIND_ALL_REVIEWS = "SELECT * FROM REVIEWS ORDER BY USEFUL DESC LIMIT ?";
     private static final String ADD_LIKE = "INSERT INTO REVIEWS_LIKES (REVIEW_ID, USER_ID, IS_LIKE) VALUES (?, ?, TRUE)";
-    private static final String ADD_DISLIKE = "INSERT INTO REVIEW_DISLIKES (REVIEW_ID, USER_ID) VALUES (?, ?)";
-    private static final String REMOVE_LIKE = "DELETE FROM REVIEW_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
-    private static final String REMOVE_DISLIKE = "DELETE FROM REVIEW_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
+    private static final String ADD_DISLIKE = "INSERT INTO REVIEWS_LIKES (REVIEW_ID, USER_ID, IS_LIKE) VALUES (?, ?, FALSE)";
+    private static final String REMOVE_LIKE = "DELETE FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
+    private static final String REMOVE_DISLIKE = "DELETE FROM REVIEWS_DISLIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
     private static final String INCREMENT_USEFUL = "UPDATE REVIEWS SET USEFUL = USEFUL + 1 WHERE REVIEW_ID = ?";
     private static final String DECREMENT_USEFUL = "UPDATE REVIEWS SET USEFUL = USEFUL - 1 WHERE REVIEW_ID = ?";
 
