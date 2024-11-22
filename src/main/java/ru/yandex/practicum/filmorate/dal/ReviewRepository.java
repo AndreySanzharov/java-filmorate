@@ -63,17 +63,28 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void addLike(Integer reviewId, Integer userId) {
-        update(ADD_LIKE, reviewId, userId);
-        update(INCREMENT_USEFUL, reviewId);
-    }
-
-    public void removeLike(Integer reviewId, Integer userId) {
-        update(REMOVE_LIKE, reviewId, userId);
-        update(DECREMENT_USEFUL, reviewId);
+        if (!isReviewLikeExists(reviewId, userId)) {
+            update(ADD_LIKE, reviewId, userId);
+            update(INCREMENT_USEFUL, reviewId);
+        }
     }
 
     public void addDislike(Integer reviewId, Integer userId) {
-        update(ADD_DISLIKE, reviewId, userId);
+        if (!isReviewLikeExists(reviewId, userId)) {
+            update(ADD_DISLIKE, reviewId, userId);
+            update(DECREMENT_USEFUL, reviewId);
+        }
+    }
+
+    private boolean isReviewLikeExists(Integer reviewId, Integer userId) {
+        String checkQuery = "SELECT COUNT(*) FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
+        Integer count = jdbc.queryForObject(checkQuery, Integer.class, reviewId, userId);
+        return count != null && count > 0;
+    }
+
+
+    public void removeLike(Integer reviewId, Integer userId) {
+        update(REMOVE_LIKE, reviewId, userId);
         update(DECREMENT_USEFUL, reviewId);
     }
 
