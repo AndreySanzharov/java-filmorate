@@ -70,16 +70,28 @@ public class ReviewRepository extends BaseRepository<Review> {
     }
 
     public void addDislike(Integer reviewId, Integer userId) {
-        if (!isReviewLikeExists(reviewId, userId)) {
+        String checkQuery = "SELECT IS_LIKE FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
+        Boolean existingReaction = jdbc.query(checkQuery, rs -> rs.next() ? rs.getBoolean("IS_LIKE") : null, reviewId, userId);
+
+        if (existingReaction == null) {
+            // Если реакции нет, добавляем дизлайк и уменьшаем полезность
             update(ADD_DISLIKE, reviewId, userId);
             update(DECREMENT_USEFUL, reviewId);
+        } else if (existingReaction) {
+            // Если это лайк, меняем его на дизлайк, уменьшаем полезность дважды
+            String updateQuery = "UPDATE REVIEWS_LIKES SET IS_LIKE = FALSE WHERE REVIEW_ID = ? AND USER_ID = ?";
+            update(updateQuery, reviewId, userId);
+            update(DECREMENT_USEFUL, reviewId); // Уменьшаем полезность за удаление лайка
+            update(DECREMENT_USEFUL, reviewId); // Уменьшаем полезность за добавление дизлайка
         }
+        // Если это уже дизлайк, ничего не делаем
     }
+
 
     private boolean isReviewLikeExists(Integer reviewId, Integer userId) {
         String checkQuery = "SELECT COUNT(*) FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
         Integer count = jdbc.queryForObject(checkQuery, Integer.class, reviewId, userId);
-        return count != null && count > 0;
+        return count > 0;
     }
 
 
