@@ -183,7 +183,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public Collection<Film> search(String query, String by) {
         String searchFilmName = "";
-        String searchFilmDirector= "";
+        String searchFilmDirector = "";
 
         if (by.contains("title")) {
             searchFilmName = "%" + query + "%";
