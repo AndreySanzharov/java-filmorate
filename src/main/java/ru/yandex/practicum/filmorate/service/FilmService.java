@@ -8,8 +8,10 @@ import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
@@ -24,6 +26,7 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final GenreRepository genreRepository;
     private final LikesRepository likesRepository;
+    private final DirectorStorage directorStorage;
     private final JdbcTemplate jdbc;
 
     public Film addLike(Integer filmId, Integer userId) {
@@ -49,7 +52,16 @@ public class FilmService {
     }
 
     public Film getFilmById(Integer id) {
-        return filmStorage.getFilmById(id);
+        Film film = filmStorage.getFilmById(id);
+
+        try {
+            List<Director> director = (List<Director>) directorStorage.getDirectorByFilm(id);
+            film.setDirectors(director);
+        } catch (NotFoundException e) {
+            log.error("Director с filmId = {} не существует", id);
+        }
+
+        return film;
     }
 
     public Film create(Film film) {
@@ -77,6 +89,13 @@ public class FilmService {
                     .map(Genre::getId)
                     .toList());
         }
+
+        if (!updatedFilm.getDirectors().isEmpty()) {
+            int directorId = updatedFilm.getDirectors().getFirst().getId();
+            directorStorage.deleteFilmDirector(updatedFilm.getId());
+            directorStorage.createFilmDirector(updatedFilm.getId(), directorId);
+        }
+
         return updatedFilm;
     }
 
@@ -108,5 +127,16 @@ public class FilmService {
                 throw new ValidationException("Некоторые жанры не существуют в базе данных.");
             }
         }
+    }
+
+    public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
+        Collection<Film> films = filmStorage.getFilmsByDirector(directorId, sortBy);
+
+        films.forEach(film -> {
+            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
+            film.setDirectors((List<Director>) directors);
+        });
+
+        return films;
     }
 }
