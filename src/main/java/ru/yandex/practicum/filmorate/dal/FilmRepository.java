@@ -68,6 +68,15 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
                     "WHERE d.DIRECTOR_ID = ? " +
                     "ORDER BY LIKES DESC";
+    private static final String FOR_FILMS_QUERY =
+            "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+            "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, d.DIRECTOR_ID, d.DIRECTOR_NAME " +
+            "FROM FILMS f " +
+            "INNER JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+            "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+            "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+            "WHERE d.DIRECTOR_NAME LIKE ?" +
+            "OR f.FILM_NAME LIKE ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -169,5 +178,25 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             }
             return genres;
         }, filmId);
+    }
+
+    @Override
+    public Collection<Film> search(String query, String by) {
+        String searchFilmName = "";
+        String searchFilmDirector= "";
+
+        if (by.contains("title")) {
+            searchFilmName = "%" + query + "%";
+        }
+
+        if (by.contains("director")) {
+            searchFilmDirector = "%" + query + "%";
+        }
+
+        Collection<Film> films = findMany(FOR_FILMS_QUERY, searchFilmDirector, searchFilmName);
+
+        films.forEach(film -> film.setGenres(getGenresByFilm(film.getId())));
+
+        return films;
     }
 }

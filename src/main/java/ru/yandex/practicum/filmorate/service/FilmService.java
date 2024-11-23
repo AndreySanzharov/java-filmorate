@@ -74,6 +74,12 @@ public class FilmService {
                     .map(Genre::getId)
                     .toList());
         }
+
+        if (!createdFilm.getDirectors().isEmpty()) {
+            int directorId = createdFilm.getDirectors().getFirst().getId();
+            directorStorage.createFilmDirector(createdFilm.getId(), directorId);
+        }
+
         return createdFilm;
     }
 
@@ -138,5 +144,16 @@ public class FilmService {
         });
 
         return films;
+    }
+
+    public Collection<Film> search(String query, String by) {
+        Collection<Film> films = filmStorage.search(query, by);
+
+        films.forEach(film -> {
+            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
+            film.setDirectors((List<Director>) directors);
+        });
+
+        return  films;
     }
 }

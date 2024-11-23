@@ -20,4 +20,6 @@ public interface FilmStorage {
     void delete(Integer id);
 
     Collection<Film> getFilmsByDirector(int directorId, String sortBy);
+
+    Collection<Film> search(String query, String by);
 }
