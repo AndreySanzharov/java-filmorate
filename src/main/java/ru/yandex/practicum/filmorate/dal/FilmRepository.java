@@ -137,6 +137,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
         delete(DELETE_QUERY, id);
     }
 
+    public boolean existsById(int filmId) {
+        String query = "SELECT COUNT(*) FROM FILMS WHERE FILM_ID = ?";
+        Integer count = jdbc.queryForObject(query, Integer.class, filmId);
+        return count != null && count > 0;
+    }
+
+
     @Override
     public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
         if (sortBy.equals("likes")) {
