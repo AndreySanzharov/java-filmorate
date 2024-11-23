@@ -29,6 +29,11 @@ public class UserController {
         return userService.getMutualFriends(id, otherId);
     }
 
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Integer id) {
+        return userService.getUserById(id);
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userService.create(user);

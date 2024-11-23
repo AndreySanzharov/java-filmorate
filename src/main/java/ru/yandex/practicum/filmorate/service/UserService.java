@@ -52,7 +52,7 @@ public class UserService {
         userStorage.delete(id);
     }
 
-    private User getUserById(Integer id) {
+    public User getUserById(Integer id) {
         return userStorage.getUserById(id);
     }
 }
