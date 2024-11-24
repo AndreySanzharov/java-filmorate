@@ -2,10 +2,12 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FeedRepository;
 import ru.yandex.practicum.filmorate.dal.FilmRepository;
 import ru.yandex.practicum.filmorate.dal.ReviewRepository;
 import ru.yandex.practicum.filmorate.dal.UserRepository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -16,6 +18,7 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final FilmRepository filmRepository;
+    private final FeedRepository feedService;
 
     public Review addReview(Review review) {
         // Проверка существования пользователя
@@ -29,17 +32,42 @@ public class ReviewService {
         }
 
         validateReview(review);
-        return reviewRepository.createReview(review);
+        Review createdReview = reviewRepository.createReview(review);
+        feedService.addEvent(Feed.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(review.getUserId())
+                .eventType("REVIEW")
+                .operation("ADD")
+                .entityId(createdReview.getReviewId())
+                .build());
+
+        return createdReview;
     }
 
     public Review updateReview(Review review) {
         validateReview(review);
         ensureReviewExists(review.getReviewId());
-        return reviewRepository.updateReview(review);
+        Review updatedReview = reviewRepository.updateReview(review);
+        feedService.addEvent(Feed.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(review.getUserId())
+                .eventType("REVIEW")
+                .operation("UPDATE")
+                .entityId(updatedReview.getReviewId())
+                .build());
+        return updatedReview;
     }
 
     public void deleteReview(Integer reviewId) {
         ensureReviewExists(reviewId);
+        Review review = reviewRepository.findReviewById(reviewId);
+        feedService.addEvent(Feed.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(review.getUserId())
+                .eventType("REVIEW")
+                .operation("REMOVE")
+                .entityId(reviewId)
+                .build());
         reviewRepository.deleteReview(reviewId);
     }
 
