@@ -69,6 +69,26 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
                     "FROM FILMS_GENRES fg " +
                     "JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID " +
                     "WHERE fg.FILM_ID IN (:filmIds)";
+    private static final String FILM_BY_DIRECTOR_QUERY_ORDER_BY_RELEASE_DATE =
+            "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+                    "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, d.DIRECTOR_ID, d.DIRECTOR_NAME " +
+                    "FROM FILMS f " +
+                    "INNER JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE d.DIRECTOR_ID = ? " +
+                    "ORDER BY f.RELEASE_DATE";
+    private static final String FILM_BY_DIRECTOR_QUERY_ORDER_BY_LIKES =
+            "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
+                    "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, d.DIRECTOR_ID, d.DIRECTOR_NAME " +
+                    "FROM FILMS f " +
+                    "INNER JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
+                    "LEFT JOIN (SELECT FILM_ID, COUNT(FILM_ID) AS LIKES FROM FILMS_LIKES GROUP BY FILM_ID) fl " +
+                    "ON f.FILM_ID = fl.FILM_ID " +
+                    "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
+                    "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE d.DIRECTOR_ID = ? " +
+                    "ORDER BY LIKES DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -136,6 +156,22 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     @Override
     public void delete(Integer id) {
         delete(DELETE_QUERY, id);
+    }
+
+    public boolean existsById(int filmId) {
+        String query = "SELECT COUNT(*) FROM FILMS WHERE FILM_ID = ?";
+        Integer count = jdbc.queryForObject(query, Integer.class, filmId);
+        return count != null && count > 0;
+    }
+
+
+    @Override
+    public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
+        if (sortBy.equals("likes")) {
+            return findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_LIKES, directorId);
+        }
+
+        return findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_RELEASE_DATE, directorId);
     }
 
     private Map<Integer, Set<Genre>> getAllGenres() {

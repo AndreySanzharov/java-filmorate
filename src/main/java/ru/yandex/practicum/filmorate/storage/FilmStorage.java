@@ -20,4 +20,6 @@ public interface FilmStorage {
     void delete(Integer id);
 
     Collection<Film> getCommonFilms(Integer userId, Integer friendId);
+
+    Collection<Film> getFilmsByDirector(int directorId, String sortBy);
 }
