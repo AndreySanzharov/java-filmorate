@@ -146,6 +146,16 @@ public class FilmService {
         }
     }
 
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        if (commonFilms.isEmpty()) {
+            log.info("Общие фильмы между пользователями {} и {} не найдены.", userId, friendId);
+        }
+
+        return commonFilms;
+    }
+
     public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
         Collection<Film> films = filmStorage.getFilmsByDirector(directorId, sortBy);
 
