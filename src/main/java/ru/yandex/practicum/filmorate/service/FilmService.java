@@ -166,4 +166,8 @@ public class FilmService {
 
         return films;
     }
+
+    public Collection<Film> getPopularFilmsByGenreAndYear(int count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
+    }
 }
