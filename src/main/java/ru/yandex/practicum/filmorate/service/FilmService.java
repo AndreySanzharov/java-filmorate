@@ -31,6 +31,7 @@ public class FilmService {
     private final DirectorStorage directorStorage;
     private final JdbcTemplate jdbc;
     private final FeedRepository feedService;
+    private final UserService userService;
 
     public Film addLike(Integer filmId, Integer userId) {
         Film film = filmStorage.getFilmById(filmId);
@@ -48,6 +49,7 @@ public class FilmService {
 
     public Film deleteLike(Integer filmId, Integer userId) {
         Film film = filmStorage.getFilmById(filmId);
+        userService.getUserById(userId);
         film.getLikes().remove(userId);
         likesRepository.deleteLike(filmId, userId);
         feedService.addEvent(Feed.builder()
@@ -65,7 +67,14 @@ public class FilmService {
     }
 
     public List<Film> findAll() {
-        return filmStorage.findAll();
+        List<Film> films = filmStorage.findAll();
+
+        films.forEach(film -> {
+            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
+            film.setDirectors((List<Director>) directors);
+        });
+
+        return films;
     }
 
     public Film getFilmById(Integer id) {
@@ -91,6 +100,12 @@ public class FilmService {
                     .map(Genre::getId)
                     .toList());
         }
+
+        if (!createdFilm.getDirectors().isEmpty()) {
+            int directorId = createdFilm.getDirectors().getFirst().getId();
+            directorStorage.createFilmDirector(createdFilm.getId(), directorId);
+        }
+
         return createdFilm;
     }
 
@@ -99,17 +114,18 @@ public class FilmService {
             throw new NotFoundException("Неверный идентификатор фильма");
         }
         Film updatedFilm = filmStorage.update(film);
-        if (!updatedFilm.getGenres().isEmpty()) {
-            genreRepository.deleteGenres(updatedFilm.getId());
-            genreRepository.addGenres(updatedFilm.getId(), updatedFilm.getGenres()
+
+        genreRepository.deleteGenres(updatedFilm.getId());
+        if (!film.getGenres().isEmpty()) {
+            genreRepository.addGenres(updatedFilm.getId(), film.getGenres()
                     .stream()
                     .map(Genre::getId)
                     .toList());
         }
 
-        if (!updatedFilm.getDirectors().isEmpty()) {
-            int directorId = updatedFilm.getDirectors().getFirst().getId();
-            directorStorage.deleteFilmDirector(updatedFilm.getId());
+        directorStorage.deleteFilmDirector(updatedFilm.getId());
+        if (!film.getDirectors().isEmpty()) {
+            int directorId = film.getDirectors().getFirst().getId();
             directorStorage.createFilmDirector(updatedFilm.getId(), directorId);
         }
 
@@ -159,6 +175,22 @@ public class FilmService {
     public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
         Collection<Film> films = filmStorage.getFilmsByDirector(directorId, sortBy);
 
+        if (films.isEmpty()) {
+            log.info("Фильмы режиссера с id = {} не найдены.", directorId);
+            throw new NotFoundException("Фильмы не найдены");
+        }
+
+        films.forEach(film -> {
+            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
+            film.setDirectors((List<Director>) directors);
+        });
+
+        return films;
+    }
+
+    public Collection<Film> search(String query, String by) {
+        Collection<Film> films = filmStorage.search(query, by);
+
         films.forEach(film -> {
             Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
             film.setDirectors((List<Director>) directors);
@@ -168,6 +200,13 @@ public class FilmService {
     }
 
     public Collection<Film> getPopularFilmsByGenreAndYear(int count, Integer genreId, Integer year) {
-        return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
+        Collection<Film> films = filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
+
+        films.forEach(film -> {
+            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
+            film.setDirectors((List<Director>) directors);
+        });
+
+        return films;
     }
 }

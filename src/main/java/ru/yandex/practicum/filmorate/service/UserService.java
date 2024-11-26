@@ -60,6 +60,10 @@ public class UserService {
     }
 
     public User create(User user) {
+        if (user.getName().isEmpty()) {
+            user.setName(user.getLogin());
+        }
+
         return userStorage.create(user);
     }
 
