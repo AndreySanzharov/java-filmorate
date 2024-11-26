@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dal.FeedRepository;
 import ru.yandex.practicum.filmorate.dal.GenreRepository;
 import ru.yandex.practicum.filmorate.dal.LikesRepository;
 import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
@@ -28,11 +30,19 @@ public class FilmService {
     private final LikesRepository likesRepository;
     private final DirectorStorage directorStorage;
     private final JdbcTemplate jdbc;
+    private final FeedRepository feedService;
 
     public Film addLike(Integer filmId, Integer userId) {
         Film film = filmStorage.getFilmById(filmId);
         film.getLikes().add(userId);
         likesRepository.addLike(filmId, userId);
+        feedService.addEvent(Feed.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(userId)
+                .eventType("LIKE")
+                .operation("ADD")
+                .entityId(filmId)
+                .build());
         return film;
     }
 
@@ -40,6 +50,13 @@ public class FilmService {
         Film film = filmStorage.getFilmById(filmId);
         film.getLikes().remove(userId);
         likesRepository.deleteLike(filmId, userId);
+        feedService.addEvent(Feed.builder()
+                .timestamp(System.currentTimeMillis())
+                .userId(userId)
+                .eventType("LIKE")
+                .operation("REMOVE")
+                .entityId(filmId)
+                .build());
         return film;
     }
 
@@ -135,6 +152,16 @@ public class FilmService {
         }
     }
 
+    public Collection<Film> getCommonFilms(Integer userId, Integer friendId) {
+        Collection<Film> commonFilms = filmStorage.getCommonFilms(userId, friendId);
+
+        if (commonFilms.isEmpty()) {
+            log.info("Общие фильмы между пользователями {} и {} не найдены.", userId, friendId);
+        }
+
+        return commonFilms;
+    }
+
     public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
         Collection<Film> films = filmStorage.getFilmsByDirector(directorId, sortBy);
 
@@ -154,6 +181,10 @@ public class FilmService {
             film.setDirectors((List<Director>) directors);
         });
 
-        return  films;
+        return films;
+    }
+
+    public Collection<Film> getPopularFilmsByGenreAndYear(int count, Integer genreId, Integer year) {
+        return filmStorage.getPopularFilmsByGenreAndYear(count, genreId, year);
     }
 }

@@ -13,11 +13,15 @@ public interface FilmStorage {
 
     Collection<Film> getPopularFilms(Integer count);
 
+    Collection<Film> getPopularFilmsByGenreAndYear(int count, Integer genreId, Integer year);
+
     Film create(Film film);
 
     Film update(Film film);
 
     void delete(Integer id);
+
+    Collection<Film> getCommonFilms(Integer userId, Integer friendId);
 
     Collection<Film> getFilmsByDirector(int directorId, String sortBy);
 
