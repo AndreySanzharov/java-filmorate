@@ -96,8 +96,9 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "INNER JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
             "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
             "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-            "WHERE d.DIRECTOR_NAME LIKE ?" +
-            "OR f.FILM_NAME LIKE ?";
+            "WHERE LOWER(d.DIRECTOR_NAME) LIKE LOWER(?)" +
+            "OR LOWER(f.FILM_NAME) LIKE LOWER(?)" +
+            "ORDER BY f.FILM_ID DESC";
     private static final String POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
             "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, COALESCE(fl.LIKES, 0) AS LIKES " +
             "FROM FILMS f " +
@@ -187,11 +188,17 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
     @Override
     public Collection<Film> getFilmsByDirector(int directorId, String sortBy) {
+        Collection<Film> films;
+
         if (sortBy.equals("likes")) {
-            return findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_LIKES, directorId);
+            films = findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_LIKES, directorId);
+        } else {
+            films = findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_RELEASE_DATE, directorId);
         }
 
-        return findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_RELEASE_DATE, directorId);
+        films.forEach(film -> film.setGenres(getGenresByFilm(film.getId())));
+
+        return films;
     }
 
     private Map<Integer, Set<Genre>> getAllGenres() {
