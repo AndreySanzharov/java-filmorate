@@ -12,6 +12,7 @@ public class LikesRepository extends BaseRepository<Film> {
     private static final String ADD_LIKE_QUERY = "INSERT INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
     private static final String DELETE_LIKE_QUERY = "DELETE FROM FILMS_LIKES WHERE FILM_ID = ? AND USER_ID = ?";
     private static final String LIKES_BY_USER_ID_QUERY = "SELECT FILM_ID FROM FILMS_LIKES WHERE USER_ID = ?"; // новый запрос для получения лайков
+    private static final String LIKES_BY_USER_ID_AND_FILM_QUERY = "SELECT FILM_ID FROM FILMS_LIKES WHERE FILM_ID = ? AND USER_ID = ?"; // новый запрос для получения лайков
 
     public LikesRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -28,5 +29,10 @@ public class LikesRepository extends BaseRepository<Film> {
     public List<Integer> getLikesByUserId(Integer userId) {
         return jdbc.query(LIKES_BY_USER_ID_QUERY, (rs, rowNum)
                 -> rs.getInt("FILM_ID"), userId);
+    }
+
+    public List<Integer> getLikesByFilmAndUserId(Integer filmId, Integer userId) {
+        return jdbc.query(LIKES_BY_USER_ID_AND_FILM_QUERY, (rs, rowNum)
+                -> rs.getInt("FILM_ID"), filmId, userId);
     }
 }

@@ -36,7 +36,11 @@ public class FilmService {
     public Film addLike(Integer filmId, Integer userId) {
         Film film = filmStorage.getFilmById(filmId);
         film.getLikes().add(userId);
-        likesRepository.addLike(filmId, userId);
+
+        if (likesRepository.getLikesByFilmAndUserId(filmId, userId).isEmpty()) {
+            likesRepository.addLike(filmId, userId);
+        }
+
         feedService.addEvent(Feed.builder()
                 .timestamp(System.currentTimeMillis())
                 .userId(userId)
