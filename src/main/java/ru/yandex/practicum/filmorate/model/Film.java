@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,10 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @NoArgsConstructor
@@ -30,7 +28,8 @@ public class Film {
     private int duration;
     @JsonIgnore
     private List<Integer> likes = new ArrayList<>();
-    private Set<Genre> genres = new HashSet<>();
+    @JsonDeserialize(as = LinkedHashSet.class)
+    private Set<Genre> genres = new LinkedHashSet<>();
     private List<Director> directors = new ArrayList<>();
     private Mpa mpa;
 

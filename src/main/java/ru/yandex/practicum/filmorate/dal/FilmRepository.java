@@ -48,7 +48,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
     private static final String GENRES_BY_FILM_QUERY = "SELECT g.GENRE_ID, g.GENRE_NAME " +
             "FROM GENRES g " +
             "JOIN FILMS_GENRES fg ON g.GENRE_ID = fg.GENRE_ID " +
-            "WHERE fg.FILM_ID = ?";
+            "WHERE fg.FILM_ID = ?" +
+            " ORDER BY g.GENRE_ID";
 
     private static final String COMMON_FILMS_QUERY =
             "SELECT f.*, m.MPA_NAME, COUNT(fl.USER_ID) AS LIKES " +
@@ -68,7 +69,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "SELECT fg.FILM_ID, g.GENRE_ID, g.GENRE_NAME " +
                     "FROM FILMS_GENRES fg " +
                     "JOIN GENRES g ON fg.GENRE_ID = g.GENRE_ID " +
-                    "WHERE fg.FILM_ID IN (:filmIds)";
+                    "WHERE fg.FILM_ID IN (:filmIds)" +
+                    " ORDER BY g.GENRE_ID";
     private static final String FILM_BY_DIRECTOR_QUERY_ORDER_BY_RELEASE_DATE =
             "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
                     "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, d.DIRECTOR_ID, d.DIRECTOR_NAME " +
