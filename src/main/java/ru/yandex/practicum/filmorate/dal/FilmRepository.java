@@ -99,7 +99,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             "LEFT JOIN FILMS_DIRECTORS fd ON fd.FILM_ID = f.FILM_ID " +
             "LEFT JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
             "WHERE LOWER(d.DIRECTOR_NAME) LIKE LOWER(?)" +
-            "OR LOWER(f.FILM_NAME) LIKE LOWER(?)";
+            "OR LOWER(f.FILM_NAME) LIKE LOWER(?)" +
+            "ORDER BY f.FILM_ID DESC";
     private static final String POPULAR_FILMS_BY_GENRE_AND_YEAR_QUERY = "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, " +
             "f.RELEASE_DATE, f.DURATION, f.MPA_ID, m.MPA_NAME, COALESCE(fl.LIKES, 0) AS LIKES " +
             "FROM FILMS f " +
