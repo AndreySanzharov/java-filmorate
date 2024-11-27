@@ -35,7 +35,7 @@ public class ReviewService {
         Review createdReview = reviewRepository.createReview(review);
         feedService.addEvent(Feed.builder()
                 .timestamp(System.currentTimeMillis())
-                .userId(review.getUserId())
+                .userId(createdReview.getUserId())
                 .eventType("REVIEW")
                 .operation("ADD")
                 .entityId(createdReview.getReviewId())
@@ -50,7 +50,7 @@ public class ReviewService {
         Review updatedReview = reviewRepository.updateReview(review);
         feedService.addEvent(Feed.builder()
                 .timestamp(System.currentTimeMillis())
-                .userId(review.getUserId())
+                .userId(updatedReview.getUserId())
                 .eventType("REVIEW")
                 .operation("UPDATE")
                 .entityId(updatedReview.getReviewId())
