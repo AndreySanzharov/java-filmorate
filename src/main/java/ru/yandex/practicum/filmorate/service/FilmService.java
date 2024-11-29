@@ -193,17 +193,6 @@ public class FilmService {
         return films;
     }
 
-//    public Collection<Film> search(String query, String by) {
-//        Collection<Film> films = filmStorage.search(query, by);
-//
-//        films.forEach(film -> {
-//            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
-//            film.setDirectors((List<Director>) directors);
-//        });
-//
-//        return films;
-//    }
-
     public Collection<Film> search(String query, String by) {
         // Получаем все фильмы, соответствующие критериям поиска
         Collection<Film> films = filmStorage.search(query, by);
