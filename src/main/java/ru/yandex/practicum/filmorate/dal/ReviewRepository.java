@@ -4,11 +4,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.List;
 
 @Repository
-public class ReviewRepository extends BaseRepository<Review> {
+public class ReviewRepository extends BaseRepository<Review> implements ReviewStorage {
 
     private static final String INSERT_REVIEW = "INSERT INTO REVIEWS (CONTENT, IS_POSITIVE, USER_ID, FILM_ID, USEFUL) " +
             "VALUES (?, ?, ?, ?, 0)";
@@ -33,6 +34,7 @@ public class ReviewRepository extends BaseRepository<Review> {
         super(jdbc, mapper);
     }
 
+    @Override
     public Review createReview(Review review) {
         Integer id = insert(INSERT_REVIEW, review.getContent(), review.getIsPositive(),
                 review.getUserId(), review.getFilmId());
@@ -41,27 +43,33 @@ public class ReviewRepository extends BaseRepository<Review> {
         return review;
     }
 
+    @Override
     public Review updateReview(Review review) {
         update(UPDATE_REVIEW, review.getContent(), review.getIsPositive(), review.getReviewId());
         return findReviewById(review.getReviewId());
     }
 
+    @Override
     public void deleteReview(Integer reviewId) {
         delete(DELETE_REVIEW, reviewId);
     }
 
+    @Override
     public Review findReviewById(Integer reviewId) {
         return findOne(FIND_REVIEW_BY_ID, reviewId);
     }
 
+    @Override
     public List<Review> findReviewsByFilm(Integer filmId, Integer count) {
         return findMany(FIND_REVIEWS_BY_FILM, filmId, count);
     }
 
+    @Override
     public List<Review> findAllReviews(Integer count) {
         return findMany(FIND_ALL_REVIEWS, count);
     }
 
+    @Override
     public void addLike(Integer reviewId, Integer userId) {
         if (!isReviewLikeExists(reviewId, userId)) {
             update(ADD_LIKE, reviewId, userId);
@@ -69,6 +77,7 @@ public class ReviewRepository extends BaseRepository<Review> {
         }
     }
 
+    @Override
     public void addDislike(Integer reviewId, Integer userId) {
         String checkQuery = "SELECT IS_LIKE FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
         Boolean existingReaction = jdbc.query(checkQuery, rs -> rs.next() ? rs.getBoolean("IS_LIKE") : null, reviewId, userId);
@@ -87,21 +96,21 @@ public class ReviewRepository extends BaseRepository<Review> {
         // Если это уже дизлайк, ничего не делаем
     }
 
-
-    private boolean isReviewLikeExists(Integer reviewId, Integer userId) {
-        String checkQuery = "SELECT COUNT(*) FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
-        Integer count = jdbc.queryForObject(checkQuery, Integer.class, reviewId, userId);
-        return count > 0;
-    }
-
-
+    @Override
     public void removeLike(Integer reviewId, Integer userId) {
         update(REMOVE_LIKE, reviewId, userId);
         update(DECREMENT_USEFUL, reviewId);
     }
 
+    @Override
     public void removeDislike(Integer reviewId, Integer userId) {
         update(REMOVE_DISLIKE, reviewId, userId);
         update(INCREMENT_USEFUL, reviewId);
+    }
+
+    private boolean isReviewLikeExists(Integer reviewId, Integer userId) {
+        String checkQuery = "SELECT COUNT(*) FROM REVIEWS_LIKES WHERE REVIEW_ID = ? AND USER_ID = ?";
+        Integer count = jdbc.queryForObject(checkQuery, Integer.class, reviewId, userId);
+        return count > 0;
     }
 }

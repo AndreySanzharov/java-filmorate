@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Repository
@@ -36,7 +37,7 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     }
 
     @Override
-    public Collection<Director> getList() {
+    public List<Director> getList() {
         return findMany(SELECT_LIST);
     }
 

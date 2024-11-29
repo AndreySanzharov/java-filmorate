@@ -4,11 +4,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.*;
 
 @Repository
-public class GenreRepository extends BaseRepository<Genre> {
+public class GenreRepository extends BaseRepository<Genre> implements GenreStorage {
     private static final String FOR_ALL_GENRES_QUERY = "SELECT * FROM GENRES ORDER BY genre_id";
     private static final String INSERT_GENRES_QUERY = "INSERT INTO FILMS_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
     private static final String FOR_GENRE_BY_ID_QUERY = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
@@ -18,14 +19,17 @@ public class GenreRepository extends BaseRepository<Genre> {
         super(jdbc, mapper);
     }
 
+    @Override
     public Collection<Genre> findAllGenres() {
         return findMany(FOR_ALL_GENRES_QUERY);
     }
 
+    @Override
     public Genre getGenreById(Integer id) {
         return findOne(FOR_GENRE_BY_ID_QUERY, id);
     }
 
+    @Override
     public void addGenres(Integer filmId, List<Integer> genreIds) {
         jdbc.batchUpdate(INSERT_GENRES_QUERY, genreIds, genreIds.size(), (ps, genreId) -> {
             ps.setInt(1, filmId);
@@ -33,6 +37,7 @@ public class GenreRepository extends BaseRepository<Genre> {
         });
     }
 
+    @Override
     public void deleteGenres(Integer filmId) {
         update(DELETE_ALL_FROM_FILM_QUERY, filmId);
     }
