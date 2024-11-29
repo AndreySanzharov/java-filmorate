@@ -62,4 +62,11 @@ public class UserRepository extends BaseRepository<User> implements UserStorage 
     public void delete(Integer id) {
         delete(DELETE_QUERY, id);
     }
+
+    public boolean existsById(int userId) {
+        String query = "SELECT COUNT(*) FROM USERS WHERE USER_ID = ?";
+        Integer count = jdbc.queryForObject(query, Integer.class, userId);
+        return count != null && count > 0;
+    }
+
 }
