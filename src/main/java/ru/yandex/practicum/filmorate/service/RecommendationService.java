@@ -28,14 +28,21 @@ public class RecommendationService {
         Map<User, Integer> userSimilarityScores = new HashMap<>();
         //получаем все лайки одного пользователя
         Set<Integer> targetUserLikes = new HashSet<>(likesRepository.getLikesByUserId(userId));
+        // получить все лайки всех пользователей
+        Map<Integer, Set<Integer>> allUserLikes = likesRepository.getAllLikes();
 
         // найти пользователей с максимальным кол-вом пересечений по лайкам
-        for (User user : allUsers) {
-            if (!user.getId().equals(userId)) {
-                Set<Integer> otherUserLikes = new HashSet<>(likesRepository.getLikesByUserId(user.getId()));
+        for (Map.Entry<Integer, Set<Integer>> entry : allUserLikes.entrySet()) {
+            Integer currentUserId = entry.getKey();
+            Set<Integer> otherUserLikes = entry.getValue();
+            // пропускаем текущего пользователя
+            if (!currentUserId.equals(userId)) {
                 int intersectionCount = countIntersection(targetUserLikes, otherUserLikes);
                 if (intersectionCount > 0) {
-                    userSimilarityScores.put(user, intersectionCount);
+                    userSimilarityScores.put(allUsers.stream()
+                            .filter(user -> user.getId().equals(currentUserId))
+                            .findFirst()
+                            .orElse(null), intersectionCount);
                 }
             }
         }
