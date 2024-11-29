@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -31,6 +31,12 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     private static final String DETELE_FILM_DIRECTOR = "DELETE FROM FILMS_DIRECTORS WHERE FILM_ID=?";
 
     private static final String CREATE_FILM_DIRECTOR = "INSERT INTO FILMS_DIRECTORS (FILM_ID, DIRECTOR_ID) VALUES (?, ?)";
+
+    private static final String DIRECTORS_BY_FILM_IDS_QUERY =
+            "SELECT fd.FILM_ID, d.DIRECTOR_ID, d.DIRECTOR_NAME " +
+                    "FROM FILMS_DIRECTORS fd " +
+                    "JOIN DIRECTORS d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                    "WHERE fd.FILM_ID IN (:filmIds)";
 
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
@@ -82,4 +88,23 @@ public class DirectorRepository extends BaseRepository<Director> implements Dire
     public void createFilmDirector(int filmId, int directorId) {
         update(CREATE_FILM_DIRECTOR, filmId, directorId);
     }
+
+    @Override
+    public Map<Integer, List<Director>> getDirectorsByFilmIds(List<Integer> filmIds) {
+        String inClause = filmIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+        String query = DIRECTORS_BY_FILM_IDS_QUERY.replace(":filmIds", inClause);
+
+        return jdbc.query(query, rs -> {
+            Map<Integer, List<Director>> directorsMap = new HashMap<>();
+            while (rs.next()) {
+                Integer filmId = rs.getInt("FILM_ID");
+                Director director = new Director(rs.getInt("DIRECTOR_ID"), rs.getString("DIRECTOR_NAME"));
+                directorsMap.computeIfAbsent(filmId, k -> new ArrayList<>()).add(director);
+            }
+            return directorsMap;
+        });
+    }
+
 }

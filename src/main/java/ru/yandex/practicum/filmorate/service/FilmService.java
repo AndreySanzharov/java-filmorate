@@ -18,6 +18,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -184,10 +185,13 @@ public class FilmService {
             throw new NotFoundException("Фильмы не найдены");
         }
 
-        films.forEach(film -> {
-            Collection<Director> directors = directorStorage.getDirectorByFilm(film.getId());
-            film.setDirectors((List<Director>) directors);
-        });
+        List<Integer> filmIds = films.stream()
+                .map(Film::getId)
+                .toList();
+
+        Map<Integer, List<Director>> directorsByFilmId = directorStorage.getDirectorsByFilmIds(filmIds);
+
+        films.forEach(film -> film.setDirectors(directorsByFilmId.getOrDefault(film.getId(), List.of())));
 
         return films;
     }

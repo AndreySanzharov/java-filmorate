@@ -9,12 +9,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,7 +47,8 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             " ORDER BY g.GENRE_ID";
 
     private static final String COMMON_FILMS_QUERY =
-            "SELECT f.*, m.MPA_NAME, COUNT(fl.USER_ID) AS LIKES " +
+            "SELECT f.FILM_ID, f.FILM_NAME, f.DESCRIPTION, f.RELEASE_DATE, f.DURATION, f.MPA_ID, " +
+                    "m.MPA_NAME, COUNT(fl.USER_ID) AS LIKES " +
                     "FROM FILMS f " +
                     "JOIN MPA_RATINGS m ON f.MPA_ID = m.MPA_ID " +
                     "JOIN FILMS_LIKES fl ON f.FILM_ID = fl.FILM_ID " +
@@ -198,7 +194,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             films = findMany(FILM_BY_DIRECTOR_QUERY_ORDER_BY_RELEASE_DATE, directorId);
         }
 
-        films.forEach(film -> film.setGenres(getGenresByFilm(film.getId())));
+        List<Integer> filmIds = films.stream()
+                .map(Film::getId)
+                .toList();
+
+        Map<Integer, Set<Genre>> genresByFilmId = getGenresByFilmIds(filmIds);
+
+        films.forEach(film -> film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>())));
 
         return films;
     }
@@ -243,7 +245,13 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
 
         Collection<Film> films = findMany(FOR_FILMS_QUERY, searchFilmDirector, searchFilmName);
 
-        films.forEach(film -> film.setGenres(getGenresByFilm(film.getId())));
+        List<Integer> filmIds = films.stream()
+                .map(Film::getId)
+                .toList();
+
+        Map<Integer, Set<Genre>> genresByFilmId = getGenresByFilmIds(filmIds);
+
+        films.forEach(film -> film.setGenres(genresByFilmId.getOrDefault(film.getId(), new LinkedHashSet<>())));
 
         return films;
     }
@@ -272,7 +280,7 @@ public class FilmRepository extends BaseRepository<Film> implements FilmStorage 
             while (rs.next()) {
                 Integer filmId = rs.getInt("FILM_ID");
                 Genre genre = new Genre(rs.getInt("GENRE_ID"), rs.getString("GENRE_NAME"));
-                genresMap.computeIfAbsent(filmId, k -> new HashSet<>()).add(genre);
+                genresMap.computeIfAbsent(filmId, k -> new LinkedHashSet<>()).add(genre);
             }
             return genresMap;
         });

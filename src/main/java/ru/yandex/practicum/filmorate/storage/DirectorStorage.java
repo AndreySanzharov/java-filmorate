@@ -4,6 +4,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public interface DirectorStorage {
     List<Director> getList();
@@ -21,4 +22,6 @@ public interface DirectorStorage {
     void deleteFilmDirector(int filmId);
 
     void createFilmDirector(int filmId, int directorId);
+
+    Map<Integer, List<Director>> getDirectorsByFilmIds(List<Integer> filmIds);
 }
